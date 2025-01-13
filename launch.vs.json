@@ -1,0 +1,13 @@
+{
+	"version": "0.2.1",
+	"defaults": {},
+	"configurations": [
+		{
+			"type": "default",
+			"project": "Scop",
+			"projectTarget": " C:\\Users\\kimse\\NewScop\\Scop\\bin\\Scop.exe",
+			"name": "Scop",
+			"args": [ "42.obj" ]
+		}
+	]
+}
