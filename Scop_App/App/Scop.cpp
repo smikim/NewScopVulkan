@@ -11,6 +11,7 @@ namespace scop
 	Scop::~Scop()
 	{
 		deleteScopObjects();
+		//deleteHumanObjects();
 	}
 
 	void Scop::run()
@@ -43,6 +44,7 @@ namespace scop
 		try {
 			_renderer.initVulkan();
 			createScopObject(ObjFilename, BmpFilename);
+			//createHumanObject();
 		}
 		catch (const std::exception& e)
 		{
@@ -70,6 +72,12 @@ namespace scop
 		{
 			ScopObjects[i]->Render();
 		}
+
+		/*for (size_t i = 0; i < humanObjects.size(); i++)
+		{
+			humanObjects[i]->Render();
+		}*/
+
 		_renderer.endRenderPass();
 		result = _renderer.endRender();
 		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
@@ -89,10 +97,25 @@ namespace scop
 		ScopObjects.push_back(obj);
 		//obj->_transform.translation = { .0f, .0f, 0.0f };
 		//obj->_transform.scale = { 0.5f, 0.5f, 0.5f };
-		obj->setTranslation(0.f, 0.f, 0.f);
+		obj->setTranslation(0.f, 2.f, 0.f);
 		//obj->setScale(0.5f, 0.5f, 0.5f);
 		//obj->setRotation(0.0f, 180.f, 0.0f);
 		
+		return obj;
+	}
+
+	humanGL::HumanGLObject* Scop::createHumanObject()
+	{
+		humanGL::HumanGLObject* obj = new humanGL::HumanGLObject;
+
+		if (!obj->Initialize(this))
+		{
+			delete obj;
+			throw std::runtime_error("Failed to initialize ScopObject");
+		}
+
+		humanObjects.push_back(obj);
+
 		return obj;
 	}
 
@@ -102,6 +125,14 @@ namespace scop
 			delete obj;
 		}
 		ScopObjects.clear();
+	}
+
+	void Scop::deleteHumanObjects()
+	{
+		for (humanGL::HumanGLObject* obj : humanObjects) {
+			delete obj;
+		}
+		humanObjects.clear();
 	}
 	
 

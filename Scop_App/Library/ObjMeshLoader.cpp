@@ -2,6 +2,7 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include "../Includes/Common/Vertex.hpp"
 
 namespace vks {
 
@@ -19,10 +20,12 @@ namespace vks {
 		
 		checkFile(objFilepath, ".obj");
 		std::string Filepath = "./Scop_App/models/" + objFilepath;
-		
-		file.open(Filepath);
+		std::string Filepath2 = "./Scop_App/models/42.obj";
+		std::cout << "Filepath :" << Filepath << std::endl;
+		std::cout << "Filepath2 :" << Filepath2 << std::endl;
+		file.open(Filepath2);
 		if (!file.is_open()) {
-			throw std::runtime_error(std::string("Failed to open OBJ file: ") + objFilepath);
+			throw std::runtime_error(std::string("Failed to open OBJ file: ") + Filepath2);
 		}
 
 		std::stringstream buffer;
@@ -207,7 +210,7 @@ namespace vks {
 
 		std::vector<std::string> v_vt_vn = split(vertex_description, "/");
 
-		vks::VulkanModel::Vertex vertex{};
+		::ScopVertex vertex{};
 
 		//position
 		mymath::Vec3 pos = v[std::stol(v_vt_vn[0]) - 1];
@@ -218,14 +221,14 @@ namespace vks {
 
 		// color
 		mymath::Vec3 color = vertexColors[std::stol(v_vt_vn[0]) - 1];
-		if (color == mymath::Vec3(-1.0f)) { // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+		if (color == mymath::Vec3(-1.0f)) { // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?
 
 			// color
-			if (brushColor == mymath::Vec3(-1.0f)) { // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
+			if (brushColor == mymath::Vec3(-1.0f)) { // ï¿½âº» ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?
 				static const mymath::Vec3 rainbowColors[] = {
 					{1.0f, 0.0f, 0.0f}, // ï¿½ï¿½ï¿½ï¿½
 					{1.0f, 0.5f, 0.0f}, // ï¿½ï¿½È²
-					{1.0f, 1.0f, 0.0f}, // ï¿½ï¿½ï¿½
+					{1.0f, 1.0f, 0.0f}, // ï¿½ï¿½ï¿?
 					{0.0f, 1.0f, 0.0f}, // ï¿½Ê·ï¿½
 					{0.0f, 0.0f, 1.0f}, // ï¿½Ä¶ï¿½
 					{0.29f, 0.0f, 0.51f}, // ï¿½ï¿½ï¿½ï¿½

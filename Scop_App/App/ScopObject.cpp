@@ -1,6 +1,7 @@
 #include "ScopObject.hpp"
 #include "Scop.hpp"
 #include "../Library/ObjMeshLoader.hpp"
+#include "../Scop_App/Includes/Common/ShaderData.hpp"
 
 namespace scop
 {
@@ -82,9 +83,9 @@ namespace scop
 		return res;
 	}
 
-	vks::IVulkanModel* ScopObject::CreateBoxMeshObject(std::string& BmpFilename)
+	vks::IVulkanModel<ScopVertex, ::ShaderData>* ScopObject::CreateBoxMeshObject(std::string& BmpFilename)
 	{
-		std::vector<vks::VulkanModel::Vertex> vertices;
+		std::vector<ScopVertex> vertices;
 		std::vector<uint32_t> indices;
 		createCubeData(vertices, indices);
 		
@@ -93,15 +94,14 @@ namespace scop
 			return nullptr;
 		// TODO
 		// Texture �߰� �ϴ� �ڵ�
-		_renderer->BeginCreateMesh(_vulkanModel);
-		_renderer->InsertIndexBuffer(_vulkanModel);
+		_renderer->BeginCreateMesh(_vulkanModel, vertices);
+		_renderer->InsertIndexBuffer(_vulkanModel, indices);
 		_renderer->EndCreateMesh(_vulkanModel, BmpFilename);
 
 		return _vulkanModel;
 	}
 
-	// ���⼭ �ؽ��縦 ����� �ְ� �ٲ۴�?
-	vks::IVulkanModel* ScopObject::CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename)
+	vks::IVulkanModel<ScopVertex, ::ShaderData>* ScopObject::CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename)
 	{
 			
 		_vulkanModel = _renderer->CreateBasicMeshObject(ObjFilename);
@@ -125,11 +125,11 @@ namespace scop
 
 	void ScopObject::UpdateTransform()
 	{
-		//_transform.worldMatrix = _transform.matTrans * _transform.matRot;
-		//_transform.worldMatrix = _transform.worldMatrix * _transform.matScale;
+		_transform.worldMatrix = _transform.matTrans * _transform.matRot;
+		_transform.worldMatrix = _transform.worldMatrix * _transform.matScale;
 
-		_transform.worldMatrix = _transform.matScale * _transform.matRot;
-		_transform.worldMatrix = _transform.worldMatrix * _transform.matTrans;
+		//_transform.worldMatrix = _transform.matScale * _transform.matRot;
+		//_transform.worldMatrix = _transform.worldMatrix * _transform.matTrans;
 	}
 
 	void ScopObject::Cleanup()
@@ -240,7 +240,7 @@ namespace scop
 		}
 	}
 
-	void createCubeData(std::vector<vks::VulkanModel::Vertex>& vertices,
+	void createCubeData(std::vector<ScopVertex>& vertices,
 		std::vector<uint32_t>& indices) {
 
 		vertices = {

@@ -7,7 +7,7 @@ namespace vks
 	class VulkanTexture
 	{
 	public:
-		VulkanTexture(std::string& filename, VkQueue copyQueue, vks::VulkanDevice* vulkanDevice);
+		VulkanTexture(const std::string& filename, VkQueue copyQueue, vks::VulkanDevice* vulkanDevice);
 		~VulkanTexture();
 		void createTextureImage(VkQueue copyQueue, vks::VulkanDevice* vulkanDevice);
 		void destroy();

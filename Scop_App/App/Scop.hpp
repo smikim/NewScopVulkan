@@ -3,10 +3,16 @@
 #include "vulkan/vulkan.h"
 #include "../Includes/VulkanRenderer.hpp"
 #include "ScopObject.hpp"
+#include "HumanGLObject.hpp"
 
 class GlfwWindow;
 
 #define MAX_FRAME_TIME 60
+
+namespace humanGL
+{
+	class HumanGLObject;
+}
 
 namespace scop
 {
@@ -21,6 +27,7 @@ namespace scop
 		void update();
 		void render();
 		ScopObject* createScopObject(std::string& ObjFilename, std::string& BmpFilename);
+		humanGL::HumanGLObject* createHumanObject();
 
 	private:
 		
@@ -32,9 +39,10 @@ namespace scop
 		
 		vks::VulkanRenderer _renderer{ _window };
 		std::vector<ScopObject*> ScopObjects;
-
+		std::vector<humanGL::HumanGLObject*> humanObjects;
+		
 		void deleteScopObjects();
-
+		void deleteHumanObjects();
 	public: 
 		vks::VulkanRenderer* getVulkanRenderer() { return &_renderer; }
 	};

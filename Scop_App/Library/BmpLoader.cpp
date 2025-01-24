@@ -76,7 +76,7 @@ void BmpLoader::processImage(std::vector<uint8_t>& imageData)
 	}
 	else if (infoHeader.biBitCount == 24 || infoHeader.biBitCount == 32) {
 		int bytesPerPixel = infoHeader.biBitCount / 8;
-		int rowSize = (infoHeader.btWidth * bytesPerPixel + 3) & ~3; // �� ���� ����Ʈ �� (4����Ʈ ����� �е�)
+		int rowSize = (infoHeader.btWidth * bytesPerPixel + 3) & ~3; // �� ���� ����Ʈ �� (4����Ʈ �����?�е�)
 		imageData.resize(infoHeader.btWidth * infoHeader.btHeight * 4);
 		for (int y = 0; y < infoHeader.btHeight; ++y) {
 			for (int x = 0; x < infoHeader.btWidth; ++x) {

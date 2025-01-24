@@ -138,7 +138,7 @@ namespace scop
 			}
 
 
-			const mymath::Vec3 forwardDir{ 0.f, 0.f, 1.f };
+			const mymath::Vec3 forwardDir{ 0.f, 0.f, -1.f };
 			mymath::Vec3 upDir{ 0.f, -1.f, 0.f };
 
 			const mymath::Vec3 rightDir = upDir.cross(forwardDir).normalize();		

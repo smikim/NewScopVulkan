@@ -6,12 +6,15 @@
 #include "../Graphics/BasicPSO.hpp"
 #include "../Includes/VulkanPipelineState.hpp"
 #include "../Includes/VulkanCommandBuffer.hpp"
-#include "../Includes/VulkanModel.hpp"
+
 #include "../Includes/VulkanTexture.hpp"
 #include "../Library/BmpLoader.hpp"
-
+#include "../Common/Vertex.hpp"
+#include "../Common/ShaderData.hpp"
+#include "../Library/Math/math.hpp"
 #include "../Library/Math/Matrix.hpp"
 #include "../Includes/Types.hpp"
+#include <type_traits>
 
 #include <chrono>
 
@@ -24,6 +27,8 @@ class ScopObject;
 namespace vks
 {
 	class VulkanDevice;
+	template<typename VertexType, typename ShaderData>
+	class IVulkanModel;
 
 	class VulkanRenderer
 	{
@@ -34,25 +39,47 @@ namespace vks
 
 		bool initVulkan();
 		
-		IVulkanModel* CreateBasicMeshObject();
-		IVulkanModel* CreateBasicMeshObject(std::string& ObjFilename);
-		void BeginCreateMesh(IVulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices);
-		void InsertIndexBuffer(IVulkanModel* model, std::vector<uint32_t>& indices);	
 		
-		void BeginCreateMesh(IVulkanModel* model);
-		void InsertIndexBuffer(IVulkanModel* model);	
-		void EndCreateMesh(IVulkanModel* model, std::string& BmpFilename);
-		void DeleteMeshObject(IVulkanModel* model);
+		IVulkanModel<::ScopVertex, ::ShaderData>* CreateBasicMeshObject();
+		IVulkanModel<::ScopVertex, ::ShaderData>* CreateBasicMeshObject(std::string& ObjFilename);
+		IVulkanModel<::HumanVertex, ::ShaderHumanData>* CreateHumanMeshObject();
+		
+		template <typename VertexType, typename ShaderData>
+		void BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model);
+
+		template <typename VertexType, typename ShaderData>
+		void BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::vector<VertexType>& vertices);
+		
+		template <typename VertexType, typename ShaderData>
+		void InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model, std::vector<uint32_t>& indices);
+				
+		template <typename VertexType, typename ShaderData>
+		void InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model);
+
+		template <typename VertexType, typename ShaderData>
+		void EndCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::string& BmpFilename);
+		
+		template <typename VertexType, typename ShaderData>
+		void EndCreateMesh(IVulkanModel<VertexType, ShaderData>* model);
+
+		template <typename VertexType, typename ShaderData>
+		void DeleteMeshObject(IVulkanModel<VertexType, ShaderData>* model);
 
 
-		VulkanTexture* CreateTexture(std::string& filename);
-		void init_basicPipeline(VkPipelineLayout pipelineLayout);
+		VulkanTexture* CreateTexture(const std::string& filename);
+		void AddDescriptorSetLayout(VkDescriptorSetLayout layout);
+		VulkanPipeline* createBasicPipeline(VkPipelineLayout pipelineLayout, const std::vector<VkVertexInputBindingDescription>& bindingDescription,
+			const std::vector<VkVertexInputAttributeDescription>& attributeDescription,
+			VkShaderModule vertShaderModule,
+			VkShaderModule fragShaderModule);
 		
 		VkResult beginRender();
 		void beginRenderPass();
 		void endRenderPass();
 		VkResult endRender();
-		void renderMeshObject(IVulkanModel* object, mymath::Mat4 worldMat, uint32_t colorMode);
+
+		template <typename VertexType, typename ShaderData>
+		void renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		VkResult prepareFrame();
 		VkResult submitFrame();
@@ -77,10 +104,14 @@ namespace vks
 			return static_cast<float>(_width) / static_cast<float>(_height); 
 		};
 
-		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> createUniformBuffers();
+		template <typename ShaderData>
+		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> createUniformBuffers(size_t bufferSize);
 		
 		Graphics::BasicPSO* _basicPSO = nullptr;
-		VulkanPipeline* _basicPipeline = nullptr;
+		//VulkanPipeline* _basicPipeline = nullptr;
+
+		
+
 
 	private:
 		// TODO
@@ -109,7 +140,22 @@ namespace vks
 		VkResult submitCommandBuffer();
 		void windowResize();
 		
-		void updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode);
+		template <typename T>
+		typename std::enable_if<std::is_member_object_pointer<decltype(&T::colorMode)>::value>::type
+			setColorMode(T& ubo, uint32_t colorMode)
+		{
+			ubo.colorMode = colorMode;
+		}
+
+		template <typename T>
+		typename std::enable_if<!std::is_member_object_pointer<decltype(&T::colorMode)>::value>::type
+			setColorMode(T&, uint32_t)
+		{
+			// Do nothing if T does not have colorMode
+		}
+
+		template <typename VertexType, typename ShaderData>
+		void updateObjectUniformBuffer(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		uint32_t _width;
 		uint32_t _height;
@@ -159,5 +205,192 @@ namespace vks
 
 		// Command buffers used for rendering
 		VulkanCommandBuffer* _drawCommandBuffer = nullptr;
+		std::vector<VkDescriptorSetLayout> _descriptorSetLayouts;
 	};
+
+
+	
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::vector<VertexType>& vertices)
+	{
+		if (model) {
+			model->createVertexBuffer(vertices);
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model)
+	{
+		if (model) {
+			model->createVertexBuffer();
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model, std::vector<uint32_t>& indices)
+	{
+		if (model) {
+			model->createIndexBuffer(indices);
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model)
+	{
+		if (model) {
+			model->createIndexBuffer();
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+	template<typename VertexType, typename ShaderData>
+	void VulkanRenderer::EndCreateMesh(IVulkanModel<VertexType, ShaderData>* model)
+	{
+		if (model) {
+			try {
+				model->EndCreateMesh();
+			}
+			catch (std::exception& e) {
+				std::cerr << "Failed to create mesh: " << e.what() << std::endl;
+				throw;
+			}
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::EndCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::string& BmpFilename)
+	{
+		if (model) {
+			try {
+				model->EndCreateMesh(BmpFilename);
+			}
+			catch (std::exception& e) {
+				std::cerr << "Failed to create mesh: " << e.what() << std::endl;
+				throw;
+			}
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::DeleteMeshObject(IVulkanModel<VertexType, ShaderData>* model)
+	{
+		if (model) {
+			delete model;
+		}
+		else {
+			// Handle error: model is not of type VulkanModel
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode)
+	{
+		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
+
+		if (model)
+		{
+			model->bind(commandBuffer, _currentFrame);
+
+			updateObjectUniformBuffer(model, worldMat, colorMode);
+
+			model->draw(commandBuffer);
+		}
+	}
+
+	template <typename VertexType, typename ShaderData>
+	void VulkanRenderer::updateObjectUniformBuffer(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode)
+	{
+		if (model) {
+
+			ShaderData ubo{};
+
+			ubo.modelMatrix = worldMat;
+
+			ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, 8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
+			//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
+
+
+			ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+			//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+			//ubo.projectionMatrix[5] *= -1;
+
+			//ubo.colorMode = colorMode;
+			// ShaderData에 colorMode가 있는 경우에만 값을 대입합니다.
+			//setColorMode(ubo, colorMode);
+
+			model->updateUniformBuffer(_currentFrame, &ubo);
+		}
+
+	}
+
+	template <typename ShaderData>
+	std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> VulkanRenderer::createUniformBuffers(size_t bufferSize)
+	{
+		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> uniformBuffers;
+		// Prepare and initialize the per-frame uniform buffer blocks containing shader uniforms
+		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
+		VkMemoryRequirements memReqs;
+
+		// Vertex shader uniform buffer block
+		VkBufferCreateInfo bufferInfo{};
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.pNext = nullptr;
+		allocInfo.allocationSize = 0;
+		allocInfo.memoryTypeIndex = 0;
+
+		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		//bufferInfo.size = sizeof(ShaderData);
+		bufferInfo.size = bufferSize;
+		// This buffer will be used as a uniform buffer
+		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+
+		// Create the buffers
+		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
+			VK_CHECK_RESULT(vkCreateBuffer(_vulkanDevice->getLogicalDevice(), &bufferInfo, nullptr, &uniformBuffers[i].buffer));
+			// Get memory requirements including size, alignment and memory type
+			vkGetBufferMemoryRequirements(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].buffer, &memReqs);
+			allocInfo.allocationSize = memReqs.size;
+			// Get the memory type index that supports host visible memory access
+			// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
+			// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
+			// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
+			allocInfo.memoryTypeIndex = _vulkanDevice->get_gpu().getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+			// Allocate memory for the uniform buffer
+			VK_CHECK_RESULT(vkAllocateMemory(_vulkanDevice->getLogicalDevice(), &allocInfo, nullptr, &(uniformBuffers[i].memory)));
+			// Bind memory to buffer
+			VK_CHECK_RESULT(vkBindBufferMemory(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].buffer, uniformBuffers[i].memory, 0));
+			// We map the buffer once, so we can update it without having to map it again
+			VK_CHECK_RESULT(vkMapMemory(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].memory, 0, sizeof(ShaderData), 0, (void**)&uniformBuffers[i].mapped));
+		}
+
+		return uniformBuffers;
+	}
+
 }

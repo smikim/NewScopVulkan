@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../Includes/VulkanModel.hpp"
+#include "../Includes/Common/IVulkanModel.hpp"
+#include "../Includes/Common/Vertex.hpp"
 #include "../Library/Math/Vector.hpp"
 #include "../Library/Math/Matrix.hpp"
 #include "../Library/Math/math.hpp"
@@ -47,10 +48,10 @@ namespace scop
 	{
 		Scop* _scop;
 		vks::VulkanRenderer* _renderer;
-		vks::IVulkanModel* _vulkanModel;
+		vks::IVulkanModel<ScopVertex, ::ShaderData>* _vulkanModel;
 
-		vks::IVulkanModel* CreateBoxMeshObject(std::string& BmpFilename);
-		vks::IVulkanModel* CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename);
+		vks::IVulkanModel<ScopVertex, ::ShaderData>* CreateBoxMeshObject(std::string& BmpFilename);
+		vks::IVulkanModel<ScopVertex, ::ShaderData>* CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename);
 
 		void	UpdateTransform();
 		void	Cleanup();
@@ -73,8 +74,6 @@ namespace scop
 	};
 
 	// temporary helper function, creates a 1x1x1 cube centered at offset
-	void createCubeData(std::vector<vks::VulkanModel::Vertex>& vertices,
+	void createCubeData(std::vector<ScopVertex>& vertices,
 		std::vector<uint32_t>& indices);
 }
-
-

@@ -1,21 +1,26 @@
 #include "../App/Scop.hpp"
 
 #include <iostream>
-   
+#include <filesystem>
+
+
+
 // obj file 
 // https://people.math.sc.edu/Burkardt/data/obj/obj.html
-
+using std::filesystem::current_path;
 int main(int argc, char** argv) {
-    if (argc < 2 || argc > 3)
+   /* if (argc < 2 || argc > 3)
     {
         std::cerr << "Usage: " << argv[0] << " <obj file> [bmp file]" << std::endl;
         return EXIT_FAILURE;
-    }
+    }*/
     
-    std::string objFilename{ "models/al.obj" };
+    std::string objFilename{ "42.obj" };
     std::string bmpFilename{ "./Scop_App/textures/640-480-sample.bmp" };
-
-    objFilename = argv[1];
+    std::cout << "Current working directory: " << current_path() << std::endl;
+  
+    
+    //objFilename = argv[1];
     if (argc == 3)
     {
         bmpFilename = argv[2];

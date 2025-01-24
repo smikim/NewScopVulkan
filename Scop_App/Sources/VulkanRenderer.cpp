@@ -1,7 +1,10 @@
 #include "../Includes/VulkanRenderer.hpp"
 #include "../Includes/VulkanTools.hpp"
 #include "../App/Scop.hpp"
-#include "../Library/Math/math.hpp"
+
+#include "../Includes/VulkanModel.hpp"
+#include "../Includes/VulkanAnimationModel.hpp"
+
 
 // VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
 #ifndef VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME
@@ -49,14 +52,61 @@ namespace vks
 
 		if (_basicPSO)
 			delete _basicPSO;
-		if (_basicPipeline)
-			delete _basicPipeline;
+		
 
 		vkDestroyCommandPool(_vulkanDevice->getLogicalDevice(), _CmdPool, nullptr);
 
 		//delete _texture;
 		if (_vulkanDevice)
 			delete _vulkanDevice;
+	}
+
+	IVulkanModel<::ScopVertex, ::ShaderData>* VulkanRenderer::CreateBasicMeshObject()
+	{
+		VulkanModel* vulkanModel = new VulkanModel();
+
+		if (vulkanModel->Initialize(this))
+		{
+			return vulkanModel;
+		}
+		else
+		{
+			delete vulkanModel;
+			return nullptr;
+		}
+
+	}
+
+
+	IVulkanModel<::ScopVertex, ::ShaderData>* VulkanRenderer::CreateBasicMeshObject(std::string& ObjFilename)
+	{
+		VulkanModel* vulkanModel = new VulkanModel();
+
+		if (vulkanModel->Initialize(this, ObjFilename))
+		{
+			return vulkanModel;
+		}
+		else
+		{
+			delete vulkanModel;
+			return nullptr;
+		}
+
+	}
+
+	IVulkanModel<::HumanVertex, ::ShaderHumanData>* VulkanRenderer::CreateHumanMeshObject()
+	{
+		VulkanAnimationModel* vulkanModel = new VulkanAnimationModel();
+
+		if (vulkanModel->Initialize(this))
+		{
+			return vulkanModel;
+		}
+		else
+		{
+			delete vulkanModel;
+			return nullptr;
+		}
 	}
 
 	bool VulkanRenderer::initVulkan()
@@ -99,96 +149,22 @@ namespace vks
 		} catch (const std::exception& e) {
 			 std::cerr << "Vulkan initialization failed: " << e.what() << std::endl;
 
-        	// 자원 해제
+        	// ?�원 ?�제
         	delete _vulkanDevice;
         	_vulkanDevice = nullptr;
 
-        return false;
+			return false;
 		}
 		
 	}
 
-	IVulkanModel* VulkanRenderer::CreateBasicMeshObject()
-	{
-		VulkanModel* vulkanModel = new VulkanModel;
+	
 
-		if (vulkanModel->Initialize(this))
-		{
-			return vulkanModel;
-		}
-		else
-		{
-			delete vulkanModel;
-			return nullptr;
-		}
+	
 
-	}
+	
 
-	IVulkanModel* VulkanRenderer::CreateBasicMeshObject(std::string& ObjFilename)
-	{
-		VulkanModel* vulkanModel = new VulkanModel;
-
-		if (vulkanModel->Initialize(this, ObjFilename))
-		{
-			return vulkanModel;
-		}
-		else
-		{
-			delete vulkanModel;
-			return nullptr;
-		}
-
-	}
-
-	void VulkanRenderer::BeginCreateMesh(IVulkanModel* model, std::vector<vks::VulkanModel::Vertex>& vertices)
-	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		if (vulkanModel) {
-			vulkanModel->createVertexBuffer(vertices);
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "TypeCast Error" << std::endl;
-		}
-	}
-
-	void VulkanRenderer::InsertIndexBuffer(IVulkanModel* model, std::vector<uint32_t>& indices)
-	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		if (vulkanModel) {
-			vulkanModel->createIndexBuffer(indices);
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "TypeCast Error" << std::endl;
-		}
-	}
-
-	void VulkanRenderer::BeginCreateMesh(IVulkanModel* model)
-	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		if (vulkanModel) {
-			vulkanModel->createVertexBuffer();
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "TypeCast Error" << std::endl;
-		}
-	}
-
-	void VulkanRenderer::InsertIndexBuffer(IVulkanModel* model)
-	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		if (vulkanModel) {
-			vulkanModel->createIndexBuffer();
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "TypeCast Error" << std::endl;
-		}
-	}
-
-	VulkanTexture* VulkanRenderer::CreateTexture(std::string& filename)
+	VulkanTexture* VulkanRenderer::CreateTexture(const std::string& filename)
 	{
 		VulkanTexture* texture = nullptr;
 		const VulkanQueue& queue = _vulkanDevice->get_queue_by_flags(VK_QUEUE_GRAPHICS_BIT, 0);
@@ -205,41 +181,26 @@ namespace vks
 		return texture;
 	}
 
-	void VulkanRenderer::EndCreateMesh(IVulkanModel* model, std::string& BmpFilename)
+	void VulkanRenderer::AddDescriptorSetLayout(VkDescriptorSetLayout layout)
 	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		if (vulkanModel) {
-			try {
-				vulkanModel->EndCreateMesh(BmpFilename);
-			} catch (std::exception& e) {
-				std::cerr << "Failed to create mesh: " << e.what() << std::endl;
-				throw;
-			}
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "TypeCast Error" << std::endl;
-		}
-		
+		_descriptorSetLayouts.push_back(layout);
 	}
-
-	void VulkanRenderer::DeleteMeshObject(IVulkanModel* model)
+	
+	VulkanPipeline* VulkanRenderer::createBasicPipeline(VkPipelineLayout pipelineLayout,
+		const std::vector<VkVertexInputBindingDescription>& bindingDescription,
+		const std::vector<VkVertexInputAttributeDescription>& attributeDescription,
+		VkShaderModule vertShaderModule,
+		VkShaderModule fragShaderModule
+		)
 	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		if (vulkanModel) {
-			delete vulkanModel;
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "TypeCast Error" << std::endl;
-		}
-	}
 
-	void VulkanRenderer::init_basicPipeline(VkPipelineLayout pipelineLayout)
-	{
 		try {
 			_basicPSO->setPipelineLayout(pipelineLayout);
-			_basicPSO->initPSO();
+			//VkShaderModule vertShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/vert.spv", _vulkanDevice);
+			//VkShaderModule fragShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/frag.spv", _vulkanDevice);
+			//std::vector<VkVertexInputBindingDescription> bindingDescription = 
+			//std::vector<VkVertexInputAttributeDescription> attributeDescription
+			_basicPSO->initPSO(bindingDescription, attributeDescription, vertShaderModule, fragShaderModule);
 
 			// Scene rendering with shadows applied
 			std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
@@ -261,11 +222,13 @@ namespace vks
 
 			shaderStages.push_back(shaderStage);
 
-			_basicPipeline = new VulkanPipeline(*_vulkanDevice, shaderStages, _basicPSO->_pipelineState);
+			VulkanPipeline* basicPipeline = new VulkanPipeline(*_vulkanDevice, shaderStages, _basicPSO->_pipelineState);
+			return basicPipeline;
 		} catch (const std::exception& e) {
         	std::cerr << "Error : create VulkanPipeline : " << e.what() << std::endl;
-    	}
-		
+			return nullptr;
+		}
+			
 	}
 
 	VkResult VulkanRenderer::beginRender()
@@ -347,24 +310,6 @@ namespace vks
 
 		return VK_SUCCESS;
 	}
-
-	void VulkanRenderer::renderMeshObject(IVulkanModel* object, mymath::Mat4 worldMat, uint32_t colorMode)
-	{
-		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(object);
-
-		if (vulkanModel)
-		{
-			_basicPipeline->bind(commandBuffer);
-		
-			vulkanModel->bind(commandBuffer, _currentFrame);
-
-			updateObjectUniformBuffer(vulkanModel, worldMat, colorMode);
-			
-			vulkanModel->draw(commandBuffer);
-		}
-	}
-
 
 	VkResult VulkanRenderer::prepareFrame()
 	{
@@ -676,72 +621,9 @@ namespace vks
 		_prepared = true;
 	}
 
-	std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> VulkanRenderer::createUniformBuffers()
-	{
-		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> uniformBuffers;
-		// Prepare and initialize the per-frame uniform buffer blocks containing shader uniforms
-		// Single uniforms like in OpenGL are no longer present in Vulkan. All Shader uniforms are passed via uniform buffer blocks
-		VkMemoryRequirements memReqs;
-
-		// Vertex shader uniform buffer block
-		VkBufferCreateInfo bufferInfo{};
-		VkMemoryAllocateInfo allocInfo{};
-		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-		allocInfo.pNext = nullptr;
-		allocInfo.allocationSize = 0;
-		allocInfo.memoryTypeIndex = 0;
-
-		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferInfo.size = sizeof(ShaderData);
-		// This buffer will be used as a uniform buffer
-		bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-
-		// Create the buffers
-		for (uint32_t i = 0; i < MAX_CONCURRENT_FRAMES; i++) {
-			VK_CHECK_RESULT(vkCreateBuffer(_vulkanDevice->getLogicalDevice(), &bufferInfo, nullptr, &uniformBuffers[i].buffer));
-			// Get memory requirements including size, alignment and memory type
-			vkGetBufferMemoryRequirements(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].buffer, &memReqs);
-			allocInfo.allocationSize = memReqs.size;
-			// Get the memory type index that supports host visible memory access
-			// Most implementations offer multiple memory types and selecting the correct one to allocate memory from is crucial
-			// We also want the buffer to be host coherent so we don't have to flush (or sync after every update.
-			// Note: This may affect performance so you might not want to do this in a real world application that updates buffers on a regular base
-			allocInfo.memoryTypeIndex = _vulkanDevice->get_gpu().getMemoryType(memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-			// Allocate memory for the uniform buffer
-			VK_CHECK_RESULT(vkAllocateMemory(_vulkanDevice->getLogicalDevice(), &allocInfo, nullptr, &(uniformBuffers[i].memory)));
-			// Bind memory to buffer
-			VK_CHECK_RESULT(vkBindBufferMemory(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].buffer, uniformBuffers[i].memory, 0));
-			// We map the buffer once, so we can update it without having to map it again
-			VK_CHECK_RESULT(vkMapMemory(_vulkanDevice->getLogicalDevice(), uniformBuffers[i].memory, 0, sizeof(ShaderData), 0, (void**)&uniformBuffers[i].mapped));
-		}
-
-		return uniformBuffers;
-	}
-
-	void VulkanRenderer::updateObjectUniformBuffer(IVulkanModel* model, mymath::Mat4 worldMat, uint32_t colorMode)
-	{
-		VulkanModel* vulkanModel = dynamic_cast<VulkanModel*>(model);
-		
-		if (vulkanModel) {
-
-			ShaderData ubo{};
-
-			ubo.modelMatrix = worldMat;
-
-			ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, -8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
-			//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
-
-
-			ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
-			//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-			//ubo.projectionMatrix[5] *= -1;
-
-			ubo.colorMode = colorMode;
-
-			vulkanModel->updateUniformBuffer(_currentFrame, &ubo);
-		}
-		
-	}
+	
+	
+	
 
 }
 

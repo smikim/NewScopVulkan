@@ -5,7 +5,7 @@
 
 namespace vks
 {
-	VulkanTexture::VulkanTexture(std::string& filename, VkQueue copyQueue, vks::VulkanDevice* vulkanDevice)
+	VulkanTexture::VulkanTexture(const std::string& filename, VkQueue copyQueue, vks::VulkanDevice* vulkanDevice)
 		: _filename(filename), _vulkanDevice(vulkanDevice)
 	{
 		try {

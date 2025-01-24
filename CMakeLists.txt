@@ -76,11 +76,23 @@ set(APP_FILES
     # Headers Files    
     Scop_App/App/Scop.hpp
     Scop_App/App/ScopObject.hpp
+    Scop_App/App/HumanGLObject.hpp
     # Source Files
     Scop_App/App/Scop.cpp
     Scop_App/App/ScopObject.cpp
+    Scop_App/App/HumanGLObject.cpp
 )
 
+set(COMPONENT_FILES
+    # Headers Files    
+    Scop_App/Component/Component.hpp
+    Scop_App/Component/Transform.hpp
+    Scop_App/Component/Animation.hpp
+    # Source Files
+    Scop_App/Component/Component.cpp
+    Scop_App/Component/Transform.cpp
+    Scop_App/Component/Animation.cpp
+)
 set(GRAPHICS_FILES
     # Headers Files    
     Scop_App/Graphics/BasicPSO.hpp
@@ -90,12 +102,16 @@ set(GRAPHICS_FILES
 
 set(INCLUDES_FILES 
     # Headers Files    
+    Scop_App/Includes/Common/IVulkanModel.hpp
+    Scop_App/Includes/Common/Vertex.hpp
+    Scop_App/Includes/Common/ShaderData.hpp
     Scop_App/Includes/helpers.hpp
     Scop_App/Includes/KeyboardMovementController.hpp
     Scop_App/Includes/Types.hpp
     Scop_App/Includes/VulkanBuffer.hpp
     Scop_App/Includes/VulkanCommandBuffer.hpp
     Scop_App/Includes/VulkanDebug.hpp
+    Scop_App/Includes/VulkanDescriptor.hpp
     Scop_App/Includes/VulkanDevice.hpp
     Scop_App/Includes/VulkanInitializers.hpp
     Scop_App/Includes/VulkanInstance.hpp
@@ -109,6 +125,7 @@ set(INCLUDES_FILES
     Scop_App/Includes/VulkanTexture.hpp
     Scop_App/Includes/VulkanTools.hpp
     Scop_App/Includes/VulkanUtils.hpp
+    Scop_App/Includes/VulkanAnimationModel.hpp
 )
 
 set(LIBRAYRY_FILES
@@ -132,12 +149,14 @@ set(MAIN_FILE
 )
 
 set(SRC_FILES 
-    # Source Files    
+    # Source Files
+    Scop_App/Sources/Common/Vertex.cpp
     Scop_App/Sources/KeyboardMovementController.cpp
     Scop_App/Sources/VulkanBuffer.cpp
     Scop_App/Sources/VulkanCommandBuffer.cpp
     Scop_App/Sources/VulkanDebug.cpp
     Scop_App/Sources/VulkanDevice.cpp
+    Scop_App/Sources/VulkanDescriptor.cpp
     Scop_App/Sources/VulkanInstance.cpp
     Scop_App/Sources/VulkanModel.cpp
     Scop_App/Sources/VulkanPhysicalDevice.cpp
@@ -149,6 +168,8 @@ set(SRC_FILES
     Scop_App/Sources/VulkanTexture.cpp
     Scop_App/Sources/VulkanTools.cpp
     Scop_App/Sources/VulkanUtils.cpp
+    Scop_App/Sources/VulkanAnimationModel.cpp
+
 )
 
 set(WINDOW_FILES
@@ -159,6 +180,7 @@ set(WINDOW_FILES
 )
 set(PROJECT_FILES
     ${APP_FILES}
+    ${COMPONENT_FILES}
     ${GRAPHICS_FILES}
     ${INCLUDES_FILES}
     ${LIBRAYRY_FILES}
@@ -171,7 +193,7 @@ add_executable(${PROJECT_NAME} ${PROJECT_FILES})
 
 # ?�행 ?�일??출력 ?�렉?�리�??�정?�니??
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/bin"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}"
 )
 
 # ?�브?�트 ?�일 �?기�? 중간 ?�일??출력 ?�렉?�리�??�정?�니??
@@ -271,16 +293,22 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
 message(STATUS "GLSL_SOURCE_FILES: ${GLSL_SOURCE_FILES}")
 
 foreach(GLSL ${GLSL_SOURCE_FILES})
+  get_filename_component(FILE_NAME ${GLSL} NAME_WE)
   get_filename_component(FILE_EXT ${GLSL} EXT)
-  string(REPLACE "." "" FILE_EXT ${FILE_EXT})
-  set(SPIRV "${PROJECT_SOURCE_DIR}/Scop_App/shaders/${FILE_EXT}.spv")
+  set(SPIRV "${PROJECT_SOURCE_DIR}/Scop_App/shaders/${FILE_NAME}${FILE_EXT}.spv")
+
+  # 디버그 메시지 출력
+  message(STATUS "Compiling ${GLSL} to ${SPIRV}")
+    
   add_custom_command(
     OUTPUT ${SPIRV}
     COMMAND ${GLSL_VALIDATOR} -V ${GLSL} -o ${SPIRV}
-    DEPENDS ${GLSL})
+    DEPENDS ${GLSL}
+    COMMENT "Compiling ${GLSL} to ${SPIRV}"
+  )
   list(APPEND SPIRV_BINARY_FILES ${SPIRV})
 endforeach(GLSL)
- 
+
 # ?�버�?메시지 출력
 message(STATUS "SPIRV_BINARY_FILES: ${SPIRV_BINARY_FILES}")
 

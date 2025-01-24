@@ -25,7 +25,10 @@ namespace Graphics
 		VkPipelineLayout _PipelineLayout{ VK_NULL_HANDLE };
 
 		VkRenderPass _RenderPass;
-		void initPSO();
+		void initPSO(std::vector<VkVertexInputBindingDescription> bindingDescription,
+			std::vector<VkVertexInputAttributeDescription> attributeDescription,
+			VkShaderModule vertShaderModule,
+			VkShaderModule fragShaderModule);
 		void setPipelineLayout(VkPipelineLayout pipelineLayout);
 	};
 }

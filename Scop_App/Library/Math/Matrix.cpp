@@ -1,4 +1,4 @@
-#include "Matrix.hpp"
+﻿#include "Matrix.hpp"
 
 namespace mymath
 {
@@ -79,19 +79,48 @@ namespace mymath
 
 	Mat4& Mat4::operator*=(const Mat4& other)
 	{
+
 		Mat4 res;
 
-		for (std::size_t row = 0; row < 4; ++row) {
-			for (std::size_t col = 0; col < 4; ++col) {
-				res._m[row * 4 + col] = 0; // �ʱ�ȭ
-				for (std::size_t k = 0; k < 4; ++k) {
-					res._m[row * 4 + col] += _m[row * 4 + k] * other._m[k * 4 + col];
+		std::size_t row;
+		std::size_t col;
+		std::size_t k;
+
+
+		// Çà·Ä °ö¼À ¼öÇà
+		for (row = 0; row < 4; ++row) {
+			for (col = 0; col < 4; ++col) {
+				for (k = 0; k < 4; ++k) {
+					res._m[row + col * 4] += _m[row + k * 4] * other._m[k + 4 * col];
 				}
 			}
 		}
 
+		//for (std::size_t row = 0; row < 4; ++row) {
+		//	for (std::size_t col = 0; col < 4; ++col) {
+		//		res._m[row * 4 + col] = 0; // ÃÊ±âÈ­
+		//		for (std::size_t k = 0; k < 4; ++k) {
+		//			res._m[row * 4 + col] += _m[row * 4 + k] * other._m[k * 4 + col];
+		//		}
+		//	}
+		//}
+
 		*this = res;
 		return *this;
+
+		//Mat4 res;
+
+		//for (std::size_t row = 0; row < 4; ++row) {
+		//	for (std::size_t col = 0; col < 4; ++col) {
+		//		res._m[row * 4 + col] = 0; // 占십깍옙화
+		//		for (std::size_t k = 0; k < 4; ++k) {
+		//			res._m[row * 4 + col] += _m[row * 4 + k] * other._m[k * 4 + col];
+		//		}
+		//	}
+		//}
+
+		//*this = res;
+		//return *this;
 	}
 
 
@@ -135,7 +164,7 @@ namespace mymath
 		const Vec3 uu = w.cross(up).normalize();
 		const Vec3 v = w.cross(uu);
 
-		Mat4 res;
+		Mat4 res{ 1.0f };
 		res[0] = uu._x;
 		res[4] = uu._y;
 		res[8] = uu._z;
@@ -166,7 +195,7 @@ namespace mymath
 		const Vec3 right = up.cross(front).normalize();
 		u = front.cross(right);
 
-		Mat4 res;
+		Mat4 res{ 1.0f };
 		res[0] = right._x;
 		res[4] = right._y;
 		res[8] = right._z;
@@ -223,7 +252,7 @@ namespace mymath
 		const float f = std::tan(fov / 2.f);
 		const float range = far - near;
 
-		Mat4 res;
+		Mat4 res{ 1.0f };
 
 		res._m[0] = 1.f / (aspect_ratio * f);
 		res._m[5] = 1.f / f;

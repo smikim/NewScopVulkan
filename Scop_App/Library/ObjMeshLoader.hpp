@@ -9,14 +9,16 @@
 
 #include "Math/Vector.hpp"
 #include "Math/Matrix.hpp"
-
+#include "../Scop_App/Includes/Common/Vertex.hpp"
 namespace vks
 {
+	struct ScopVertex;
+
 	class ObjMeshLoader
 	{
 	public:
 
-		std::vector<vks::VulkanModel::Vertex> vertices;
+		std::vector<::ScopVertex> vertices;
 		std::vector<uint32_t> indices;
 		std::unordered_map<std::string, uint32_t> history;
 		std::unordered_map<std::string, mymath::Vec3> colorLookup;

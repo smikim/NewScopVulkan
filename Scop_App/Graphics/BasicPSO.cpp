@@ -16,7 +16,10 @@ namespace Graphics
 			vkDestroyShaderModule(_vulkanDevice.getLogicalDevice(), _FragShaderModule, nullptr);
 	}
 
-	void BasicPSO::initPSO()
+	void BasicPSO::initPSO(std::vector<VkVertexInputBindingDescription> bindingDescription,
+		std::vector<VkVertexInputAttributeDescription> attributeDescription,
+		VkShaderModule vertShaderModule,
+		VkShaderModule fragShaderModule)
 	{
 		vks::InputAssemblyState IAState;
 
@@ -46,10 +49,10 @@ namespace Graphics
 		_pipelineState.set_multisample_state(MultiSampleState);
 
 		vks::VertexInputState VIState;
-		VIState.bindings = vks::VulkanModel::Vertex::getBindingDescription();
+		VIState.bindings = bindingDescription;
 		
 		
-		VIState.attributes = vks::VulkanModel::Vertex::getAttributeDescription();
+		VIState.attributes = attributeDescription;
 
 		_pipelineState.set_vertex_input_state(VIState);
 
@@ -57,8 +60,10 @@ namespace Graphics
 		_pipelineState.set_render_pass(_RenderPass);
 
 		// Offscreen pipeline (vertex shader only)
-		_VertShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/vert.spv", _vulkanDevice);
-		_FragShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/frag.spv", _vulkanDevice);
+		//_VertShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/vert.spv", _vulkanDevice);
+		_VertShaderModule = vertShaderModule;
+		//_FragShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/frag.spv", _vulkanDevice);
+		_FragShaderModule = fragShaderModule;
 
 
 	}
