@@ -17,6 +17,7 @@ struct ScopVertex {
 struct HumanVertex {
 	float position[3];
 	float color[3];
+	uint32_t bodyPartID;
 	static std::vector<VkVertexInputBindingDescription> getBindingDescription();
 	static std::vector<VkVertexInputAttributeDescription> getAttributeDescription();
 };

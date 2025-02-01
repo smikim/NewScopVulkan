@@ -36,10 +36,14 @@ namespace vks
 
 
 		bool	Initialize(VulkanRenderer* renderer) override;
-		bool	Initialize(VulkanRenderer* renderer, std::string& ObjFilename) ;
+		//bool	Initialize(VulkanRenderer* renderer, std::string& ObjFilename) ;
 
 		void bind(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
-		virtual void draw(VkCommandBuffer commandBuffer) override;
+		
+		void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, ::ShaderData& ubo) override;;
+		void drawNode(VkCommandBuffer commandBuffer, Node<::ScopVertex>& node, uint32_t currentFrame, ::ShaderData& ubo) override;
+		
+		//virtual void draw(VkCommandBuffer commandBuffer) override;
 		//void createVertexBuffer() override;
 		//void createIndexBuffer() override;
 		//void createVertexBuffer(const std::vector<::ScopVertex>& vertices) override;

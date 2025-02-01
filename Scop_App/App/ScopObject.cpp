@@ -2,6 +2,8 @@
 #include "Scop.hpp"
 #include "../Library/ObjMeshLoader.hpp"
 #include "../Scop_App/Includes/Common/ShaderData.hpp"
+#include "../Scop_App/Library/ObjMeshLoader.hpp"
+#include "../Scop_App/Component/Animation.hpp"
 
 namespace scop
 {
@@ -94,19 +96,28 @@ namespace scop
 			return nullptr;
 		// TODO
 		// Texture �߰� �ϴ� �ڵ�
-		_renderer->BeginCreateMesh(_vulkanModel, vertices);
-		_renderer->InsertIndexBuffer(_vulkanModel, indices);
-		_renderer->EndCreateMesh(_vulkanModel, BmpFilename);
+		_renderer->BeginCreateMesh(_vulkanModel);
+		_renderer->InsertIndexBuffer(_vulkanModel);
+
+		try {
+			_renderer->EndCreateMesh(_vulkanModel, BmpFilename);
+		}
+		catch (std::exception& e) {
+			std::cerr << "Failed to load OBJ mesh: " << e.what() << std::endl;
+			delete _vulkanModel;
+			return nullptr;
+		}
 
 		return _vulkanModel;
 	}
 
-	vks::IVulkanModel<ScopVertex, ::ShaderData>* ScopObject::CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename)
+	vks::IVulkanModel<ScopVertex, ::ShaderData>* ScopObject::CreateObjMeshObject(std::string& BmpFilename)
 	{
 			
-		_vulkanModel = _renderer->CreateBasicMeshObject(ObjFilename);
+		_vulkanModel = _renderer->CreateBasicMeshObject();
 		if (_vulkanModel == nullptr)
 			return nullptr;
+		_renderer->LoadNodes(_vulkanModel, *_root);
 		_renderer->BeginCreateMesh(_vulkanModel);
 		_renderer->InsertIndexBuffer(_vulkanModel);
 			
@@ -140,6 +151,19 @@ namespace scop
 		}
 	}
 
+	void ScopObject::createMesh()
+	{
+		_root = std::make_unique<humanGL::Node<::ScopVertex>>("root");
+
+	}
+
+	void ScopObject::fillVertexData(std::string& ObjFilename, humanGL::Node<::ScopVertex>& node)
+	{
+		vks::ObjMeshLoader objLoader{ ObjFilename };
+		node.set_vertices(objLoader.vertices);
+		node.set_indices(objLoader.indices);
+	}
+
 	ScopObject::ScopObject()
 	{
 	}
@@ -153,8 +177,11 @@ namespace scop
 	{
 		_scop = scop;
 		_renderer = scop->getVulkanRenderer();
-
-		_vulkanModel = CreateObjMeshObject(ObjFilename, BmpFilename);
+		
+		createMesh();
+		fillVertexData(ObjFilename, *_root);
+		
+		_vulkanModel = CreateObjMeshObject(BmpFilename);
 
 		if (_vulkanModel == nullptr)
 			return false;

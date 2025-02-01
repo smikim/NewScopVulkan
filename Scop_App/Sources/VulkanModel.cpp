@@ -29,10 +29,10 @@ namespace vks
 		if (_texture)
 			delete _texture;
 
-		if (_VertexBuffer.buffer != VK_NULL_HANDLE)
+		/*if (_VertexBuffer.buffer != VK_NULL_HANDLE)
 			_VertexBuffer.destroy();
 		if (_IndexBuffer.buffer != VK_NULL_HANDLE)	
-			_IndexBuffer.destroy();
+			_IndexBuffer.destroy();*/
 	}
 
 	bool VulkanModel::Initialize(VulkanRenderer* renderer)
@@ -44,48 +44,14 @@ namespace vks
 			createPipelineLayout();
 
 			VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
-			VkShaderModule vertShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/vert.spv", *vulkanDevice);
-			VkShaderModule fragShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/frag.spv", *vulkanDevice);
-
-			_basicPipeline = _renderer->createBasicPipeline(_basicPipelineLayout, ::ScopVertex::getBindingDescription(),
-				::ScopVertex::getAttributeDescription(), vertShaderModule, fragShaderModule);
-			if (_basicPipeline == nullptr)
-				return false;
-
-			_uniformBuffers = _renderer->createUniformBuffers<::ShaderData>(sizeof(::ShaderData));
-		}
-		catch (const std::exception& e)
-		{
-			std::cerr << "Failed to load OBJ mesh: " << e.what() << std::endl;
-			return false;
-		}
-		
-
-
-		return true;
-	}
-
-	bool VulkanModel::Initialize(VulkanRenderer* renderer, std::string& ObjFilename)
-	{
-		_renderer = renderer;
-
-		try {
-			ObjMeshLoader objLoader{ ObjFilename };
-			_Vertices = objLoader.vertices;
-			_Indices = objLoader.indices;
-
-			createDescriptorSetLayout();
-			createPipelineLayout();
-
-			VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
 			VkShaderModule vertShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/shader.vert.spv", *vulkanDevice);
 			VkShaderModule fragShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/shader.frag.spv", *vulkanDevice);
-			
+
 			_basicPipeline = _renderer->createBasicPipeline(_basicPipelineLayout, ::ScopVertex::getBindingDescription(),
 				::ScopVertex::getAttributeDescription(), vertShaderModule, fragShaderModule);
 			if (_basicPipeline == nullptr)
 				return false;
-		
+
 			_uniformBuffers = _renderer->createUniformBuffers<::ShaderData>(sizeof(::ShaderData));
 		}
 		catch (const std::exception& e)
@@ -98,7 +64,6 @@ namespace vks
 
 		return true;
 	}
-
 
 	void VulkanModel::bind(VkCommandBuffer commandBuffer, uint32_t currentFrame)
 	{
@@ -106,18 +71,94 @@ namespace vks
 
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[currentFrame].descriptorSet, 0, nullptr);
 
-		VkDeviceSize offsets[1]{ 0 };
-		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_VertexBuffer.buffer, offsets);
-		// Bind triangle index buffer
-
-		vkCmdBindIndexBuffer(commandBuffer, _IndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
 	}
 
-	void VulkanModel::draw(VkCommandBuffer commandBuffer)
+	void VulkanModel::updateUniformBuffer(uint32_t currentFrame, ShaderData* src)
+	{
+		//mymath::Mat4 worldMat = src->modelMatrix;
+
+		memcpy(_uniformBuffers[currentFrame].mapped, src, sizeof(::ShaderData));
+	}
+
+
+	void VulkanModel::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, ::ShaderData& ubo)
 	{
 		// Draw indexed triangle
-		vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 1);
+		for (auto& node : _nodes) {
+			drawNode(commandBuffer, *node, currentFrame, ubo);
+		}
 	}
+
+	void VulkanModel::drawNode(VkCommandBuffer commandBuffer, Node<::ScopVertex>& node, uint32_t currentFrame, ::ShaderData& ubo)
+	{
+		VkDeviceSize offsets[1]{ 0 };
+
+		vkCmdBindVertexBuffers(commandBuffer, 0, 1, &node.mesh._VertexBuffer.buffer, offsets);
+		// Bind triangle index buffer
+		vkCmdBindIndexBuffer(commandBuffer, node.mesh._IndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(commandBuffer, node.mesh.indexCount, 1, 0, 0, 1);
+
+		updateUniformBuffer(currentFrame, &ubo);
+
+
+		for (auto& child : node.children) {
+			drawNode(commandBuffer, *child, currentFrame, ubo);
+		}
+	}
+
+	//bool VulkanModel::Initialize(VulkanRenderer* renderer, std::string& ObjFilename)
+	//{
+	//	_renderer = renderer;
+
+	//	try {
+	//		ObjMeshLoader objLoader{ ObjFilename };
+	//		//_Vertices = objLoader.vertices;
+	//		//_Indices = objLoader.indices;
+
+	//		createDescriptorSetLayout();
+	//		createPipelineLayout();
+
+	//		VulkanDevice* vulkanDevice = _renderer->getVulkanDevice();
+	//		VkShaderModule vertShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/shader.vert.spv", *vulkanDevice);
+	//		VkShaderModule fragShaderModule = utils::loadSPIRVShader("./Scop_App/shaders/shader.frag.spv", *vulkanDevice);
+	//		
+	//		_basicPipeline = _renderer->createBasicPipeline(_basicPipelineLayout, ::ScopVertex::getBindingDescription(),
+	//			::ScopVertex::getAttributeDescription(), vertShaderModule, fragShaderModule);
+	//		if (_basicPipeline == nullptr)
+	//			return false;
+	//	
+	//		_uniformBuffers = _renderer->createUniformBuffers<::ShaderData>(sizeof(::ShaderData));
+	//	}
+	//	catch (const std::exception& e)
+	//	{
+	//		std::cerr << "Failed to load OBJ mesh: " << e.what() << std::endl;
+	//		return false;
+	//	}
+	//	
+
+
+	//	return true;
+	//}
+
+
+	//void VulkanModel::bind(VkCommandBuffer commandBuffer, uint32_t currentFrame)
+	//{
+	//	_basicPipeline->bind(commandBuffer);
+
+	//	vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, _basicPipelineLayout, 0, 1, &_uniformBuffers[currentFrame].descriptorSet, 0, nullptr);
+
+	//	VkDeviceSize offsets[1]{ 0 };
+	//	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &_VertexBuffer.buffer, offsets);
+	//	// Bind triangle index buffer
+
+	//	vkCmdBindIndexBuffer(commandBuffer, _IndexBuffer.buffer, 0, VK_INDEX_TYPE_UINT32);
+	//}
+
+	//void VulkanModel::draw(VkCommandBuffer commandBuffer)
+	//{
+	//	// Draw indexed triangle
+	//	vkCmdDrawIndexed(commandBuffer, indexCount, 1, 0, 0, 1);
+	//}
 
 	//void VulkanModel::createVertexBuffer()
 	//{
@@ -395,11 +436,7 @@ namespace vks
 
 	}
 
-	void VulkanModel::updateUniformBuffer(uint32_t currentFrame, ShaderData* src)
-	{
-		memcpy(_uniformBuffers[currentFrame].mapped, src, sizeof(::ShaderData));
-	}
-
+	
 	
 
 }

@@ -70,6 +70,12 @@ namespace vks
 		memcpy(mapped, data, size);
 	}
 
+	void Buffer::copyToWhere(void* data, VkDeviceSize size, VkDeviceSize offset)
+	{
+		assert(mapped);
+		memcpy(static_cast<char*>(mapped) + offset, data, size);
+	}
+
 	/**
 	* Flush a memory range of the buffer to make it visible to the device
 	*

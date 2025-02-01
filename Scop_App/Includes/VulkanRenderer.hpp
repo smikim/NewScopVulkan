@@ -24,6 +24,12 @@
 
 class ScopObject;
 
+namespace humanGL
+{
+	template<typename VertexType>
+	class Node;
+}
+
 namespace vks
 {
 	class VulkanDevice;
@@ -41,17 +47,17 @@ namespace vks
 		
 		
 		IVulkanModel<::ScopVertex, ::ShaderData>* CreateBasicMeshObject();
-		IVulkanModel<::ScopVertex, ::ShaderData>* CreateBasicMeshObject(std::string& ObjFilename);
+		// IVulkanModel<::ScopVertex, ::ShaderData>* CreateBasicMeshObject(std::string& ObjFilename);
 		IVulkanModel<::HumanVertex, ::ShaderHumanData>* CreateHumanMeshObject();
 		
 		template <typename VertexType, typename ShaderData>
 		void BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model);
 
-		template <typename VertexType, typename ShaderData>
-		void BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::vector<VertexType>& vertices);
+		//template <typename VertexType, typename ShaderData>
+		//void BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::vector<VertexType>& vertices);
 		
-		template <typename VertexType, typename ShaderData>
-		void InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model, std::vector<uint32_t>& indices);
+		//template <typename VertexType, typename ShaderData>
+		//void InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model, std::vector<uint32_t>& indices);
 				
 		template <typename VertexType, typename ShaderData>
 		void InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model);
@@ -65,6 +71,8 @@ namespace vks
 		template <typename VertexType, typename ShaderData>
 		void DeleteMeshObject(IVulkanModel<VertexType, ShaderData>* model);
 
+		template <typename VertexType, typename ShaderData>
+		void LoadNodes(IVulkanModel<VertexType, ShaderData>* model, humanGL::Node<VertexType>& node);
 
 		VulkanTexture* CreateTexture(const std::string& filename);
 		void AddDescriptorSetLayout(VkDescriptorSetLayout layout);
@@ -107,6 +115,8 @@ namespace vks
 		template <typename ShaderData>
 		std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> createUniformBuffers(size_t bufferSize);
 		
+		void createSSBO(vks::Buffer& ssbo, size_t size);
+
 		Graphics::BasicPSO* _basicPSO = nullptr;
 		//VulkanPipeline* _basicPipeline = nullptr;
 
@@ -156,6 +166,9 @@ namespace vks
 
 		template <typename VertexType, typename ShaderData>
 		void updateObjectUniformBuffer(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode);
+
+		template<typename ShaderData>
+		ShaderData updateObjectMatrix(mymath::Mat4& worldMat);
 
 		uint32_t _width;
 		uint32_t _height;
@@ -211,17 +224,17 @@ namespace vks
 
 	
 
-	template <typename VertexType, typename ShaderData>
-	void VulkanRenderer::BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::vector<VertexType>& vertices)
-	{
-		if (model) {
-			model->createVertexBuffer(vertices);
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "model is nullptr" << std::endl;
-		}
-	}
+	//template <typename VertexType, typename ShaderData>
+	//void VulkanRenderer::BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model, std::vector<VertexType>& vertices)
+	//{
+	//	if (model) {
+	//		model->createVertexBuffer(vertices);
+	//	}
+	//	else {
+	//		// Handle error: model is not of type VulkanModel
+	//		std::cerr << "model is nullptr" << std::endl;
+	//	}
+	//}
 
 	template <typename VertexType, typename ShaderData>
 	void VulkanRenderer::BeginCreateMesh(IVulkanModel<VertexType, ShaderData>* model)
@@ -235,17 +248,17 @@ namespace vks
 		}
 	}
 
-	template <typename VertexType, typename ShaderData>
-	void VulkanRenderer::InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model, std::vector<uint32_t>& indices)
-	{
-		if (model) {
-			model->createIndexBuffer(indices);
-		}
-		else {
-			// Handle error: model is not of type VulkanModel
-			std::cerr << "model is nullptr" << std::endl;
-		}
-	}
+	//template <typename VertexType, typename ShaderData>
+	//void VulkanRenderer::InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model, std::vector<uint32_t>& indices)
+	//{
+	//	if (model) {
+	//		model->createIndexBuffer(indices);
+	//	}
+	//	else {
+	//		// Handle error: model is not of type VulkanModel
+	//		std::cerr << "model is nullptr" << std::endl;
+	//	}
+	//}
 
 	template <typename VertexType, typename ShaderData>
 	void VulkanRenderer::InsertIndexBuffer(IVulkanModel<VertexType, ShaderData>* model)
@@ -307,6 +320,19 @@ namespace vks
 		}
 	}
 
+	template<typename VertexType, typename ShaderData>
+	inline void VulkanRenderer::LoadNodes(IVulkanModel<VertexType, ShaderData>* model, humanGL::Node<VertexType>& node)
+	{
+		if (model)
+		{
+			model->loadNodes(node);
+		}
+		else
+		{
+			std::cerr << "model is nullptr" << std::endl;
+		}
+	}
+
 
 	template <typename VertexType, typename ShaderData>
 	void VulkanRenderer::renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode)
@@ -317,9 +343,11 @@ namespace vks
 		{
 			model->bind(commandBuffer, _currentFrame);
 
-			updateObjectUniformBuffer(model, worldMat, colorMode);
+			//updateObjectUniformBuffer(model, worldMat, colorMode);
+			
+			ShaderData ubo = updateObjectMatrix<ShaderData>(worldMat);
 
-			model->draw(commandBuffer);
+			model->draw(commandBuffer, _currentFrame, ubo);
 		}
 	}
 
@@ -347,6 +375,22 @@ namespace vks
 			model->updateUniformBuffer(_currentFrame, &ubo);
 		}
 
+	}
+
+	template<typename ShaderData>
+	ShaderData VulkanRenderer::updateObjectMatrix(mymath::Mat4& worldMat)
+	{
+		ShaderData ubo{};
+
+		ubo.modelMatrix = worldMat;
+		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, 8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
+		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
+
+
+		ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+		//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
+
+		return ubo;
 	}
 
 	template <typename ShaderData>

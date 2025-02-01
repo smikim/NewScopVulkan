@@ -78,21 +78,21 @@ namespace vks
 	}
 
 
-	IVulkanModel<::ScopVertex, ::ShaderData>* VulkanRenderer::CreateBasicMeshObject(std::string& ObjFilename)
-	{
-		VulkanModel* vulkanModel = new VulkanModel();
+	//IVulkanModel<::ScopVertex, ::ShaderData>* VulkanRenderer::CreateBasicMeshObject(std::string& ObjFilename)
+	//{
+	//	VulkanModel* vulkanModel = new VulkanModel();
 
-		if (vulkanModel->Initialize(this, ObjFilename))
-		{
-			return vulkanModel;
-		}
-		else
-		{
-			delete vulkanModel;
-			return nullptr;
-		}
+	//	if (vulkanModel->Initialize(this, ObjFilename))
+	//	{
+	//		return vulkanModel;
+	//	}
+	//	else
+	//	{
+	//		delete vulkanModel;
+	//		return nullptr;
+	//	}
 
-	}
+	//}
 
 	IVulkanModel<::HumanVertex, ::ShaderHumanData>* VulkanRenderer::CreateHumanMeshObject()
 	{
@@ -142,7 +142,39 @@ namespace vks
 
 			_basicPSO = new Graphics::BasicPSO(*_vulkanDevice, _RenderPass);
 		
+			/////////////////////////
+			// Allocate data for the dynamic uniform buffer object
+		// We allocate this manually as the alignment of the offset differs between GPUs
 
+		// Calculate required alignment based on minimum device offset alignment
+	
+
+			
+			size_t maxUniformBufferSize = _vulkanDevice->get_gpu().get_device_properties().limits.maxUniformBufferRange;
+
+			size_t minUboAlignment = _vulkanDevice->get_gpu().get_device_properties().limits.minUniformBufferOffsetAlignment;
+			size_t maxCount = _vulkanDevice->get_gpu().get_device_properties().limits.maxDescriptorSetUniformBuffersDynamic;
+			
+			VkDeviceSize maxSSBOSize = _vulkanDevice->get_gpu().get_device_properties().limits.maxStorageBufferRange;
+
+			std::cout << "Max SSBO size: " << maxSSBOSize << " bytes" << std::endl;
+
+			std::cout << "maxCount :" << maxCount << std::endl;;
+			size_t dynamicAlignment = 64; // glm::mat4의 크기는 64바이트
+			if (minUboAlignment > 0) {
+				dynamicAlignment = (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
+			}
+			std::cout << "maxUniformBufferSize : " << maxUniformBufferSize << std::endl;
+			// 최대 할당 가능한 mat4의 개수 계산
+			size_t maxMat4Count = 65536 / dynamicAlignment; // 65536바이트 = 64KB
+
+			std::cout << "Max mat4 count: " << maxMat4Count << std::endl;
+
+			// 실제로 할당할 개수 (예: 256개)
+			size_t objectInstances = 256;
+			size_t bufferSize = objectInstances * dynamicAlignment;
+
+			std::cout << "Buffer size for 256 mat4s: " << bufferSize << " bytes" << std::endl;
 			_prepared = true;
 
 			return true;
@@ -346,6 +378,18 @@ namespace vks
 			//throw std::runtime_error("failed to present swap chain image!");
 		}
 		return VK_SUCCESS;
+	}
+
+	void VulkanRenderer::createSSBO(vks::Buffer& ssbo, size_t size)
+	{
+		// Store inverse bind matrices for this skin in a shader storage buffer object
+			// To keep this sample simple, we create a host visible shader storage buffer
+		VK_CHECK_RESULT(_vulkanDevice->createBuffer(
+			VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			&ssbo,
+			size));
+		VK_CHECK_RESULT(ssbo.map());
 	}
 
 	void VulkanRenderer::getEnabledFeatures()

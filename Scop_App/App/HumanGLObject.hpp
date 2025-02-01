@@ -22,33 +22,38 @@ namespace vks {
 
 namespace humanGL
 {
-class Node;
-class HumanGLObject
-{
-private:
-	scop::Scop* _scop;
-	vks::VulkanRenderer* _renderer;
-	vks::IVulkanModel<::HumanVertex, ::ShaderHumanData>* _vulkanModel;
-	//Node*_root = nullptr;
-	std::unique_ptr<Node> _root;
-	
-	void	Cleanup();
-	vks::IVulkanModel<::HumanVertex, ::ShaderHumanData>* CreateBoxMeshObject();
-	void drawNode(Node& node);
+	template<typename VertexType>
+	class Node;
 
-public:
-	HumanGLObject();
-	~HumanGLObject();
-	void createHuman();
-	bool Initialize(scop::Scop* scop);
-	void Run();
-	
-	void Render();
+	class HumanGLObject
+	{
+	private:
+		scop::Scop* _scop;
+		vks::VulkanRenderer* _renderer;
+		vks::IVulkanModel<::HumanVertex, ::ShaderHumanData>* _vulkanModel;
+		//Node*_root = nullptr;
+		std::unique_ptr<Node<::HumanVertex>> _root;
 
-protected:
+		void	Cleanup();
+		vks::IVulkanModel<::HumanVertex, ::ShaderHumanData>* CreateHumanMeshObject();
+		void createCubeData(std::vector<HumanVertex>& vertices, std::vector<uint32_t>& indices, uint32_t bodyPartID);
+		void drawNode(Node<::HumanVertex>& node);
+		void fillVertexData(Node<::HumanVertex>& node, size_t partsID);
+		
+	public:
+		HumanGLObject();
+		~HumanGLObject();
+		void createHuman();
+		
 
-};
+		bool Initialize(scop::Scop* scop);
+		void Run();
 
-void createCubeData(std::vector<HumanVertex>& vertices,
-	std::vector<uint32_t>& indices);
+		void Render();
+
+	protected:
+
+	};
+
+
 }

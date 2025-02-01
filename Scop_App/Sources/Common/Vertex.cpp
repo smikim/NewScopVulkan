@@ -43,6 +43,7 @@ std::vector<VkVertexInputAttributeDescription> HumanVertex::getAttributeDescript
 
 	vertexInputAttributs.push_back({ 0, 0, VK_FORMAT_R32G32B32_SFLOAT , offsetof(HumanVertex, position) });
 	vertexInputAttributs.push_back({ 1, 0, VK_FORMAT_R32G32B32_SFLOAT , offsetof(HumanVertex, color) });
+	vertexInputAttributs.push_back({ 2, 0, VK_FORMAT_R32_UINT , offsetof(HumanVertex, bodyPartID) });
 
 	return vertexInputAttributs;
 }

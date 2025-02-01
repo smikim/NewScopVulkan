@@ -6,6 +6,13 @@
 #include "../Library/Math/Matrix.hpp"
 #include "../Library/Math/math.hpp"
 
+namespace humanGL
+{
+	template<typename VertexType>
+	class Node;
+}
+
+
 namespace scop
 {
 	class Scop;
@@ -49,18 +56,22 @@ namespace scop
 		Scop* _scop;
 		vks::VulkanRenderer* _renderer;
 		vks::IVulkanModel<ScopVertex, ::ShaderData>* _vulkanModel;
-
+		std::unique_ptr<humanGL::Node<::ScopVertex>> _root;
 		vks::IVulkanModel<ScopVertex, ::ShaderData>* CreateBoxMeshObject(std::string& BmpFilename);
-		vks::IVulkanModel<ScopVertex, ::ShaderData>* CreateObjMeshObject(std::string& ObjFilename, std::string& BmpFilename);
+		vks::IVulkanModel<ScopVertex, ::ShaderData>* CreateObjMeshObject(std::string& BmpFilename);
 
 		void	UpdateTransform();
 		void	Cleanup();
+		void	createMesh();
+		void	fillVertexData(std::string& ObjFilename, humanGL::Node<::ScopVertex>& node);
+
 	public:
 		TransformComponent _transform{ };
 		uint32_t			_colorMode{0};
 
 		ScopObject();
 		~ScopObject();
+
 		bool	Initialize(Scop* scop, std::string& ObjFilename, std::string& BmpFilename);
 		void	setTranslation(float x, float y, float z);
 		void	setScale(float x, float y, float z);
@@ -71,6 +82,8 @@ namespace scop
 		void	moveTranslation(float x, float y, float z);
 		void	Run();
 		void	Render();
+
+		
 	};
 
 	// temporary helper function, creates a 1x1x1 cube centered at offset

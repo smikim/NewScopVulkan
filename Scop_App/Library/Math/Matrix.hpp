@@ -38,6 +38,11 @@ namespace mymath
 				if ((i + 1) % 4 == 0) std::cout << std::endl;
 			}
 		}
+
+		size_t size() const {
+			return sizeof(_m);
+		}
+
 	};
 
 	Mat4	lookAt(const Vec3& eye, const Vec3& center, const Vec3& up);

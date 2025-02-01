@@ -26,6 +26,7 @@ namespace vks
 		VkResult bind(VkDeviceSize offset = 0);
 		void setupDescriptor(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 		void copyTo(void* data, VkDeviceSize size);
+		void copyToWhere(void* data, VkDeviceSize size, VkDeviceSize offset);
 		VkResult flush(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 		VkResult invalidate(VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 		void destroy();

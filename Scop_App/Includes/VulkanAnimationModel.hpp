@@ -8,6 +8,7 @@
 
 #include "Common/Vertex.hpp"
 #include "Common/ShaderData.hpp"
+
 #include "VulkanDescriptor.hpp"
 
 #define MAX_CONCURRENT_FRAMES 2
@@ -17,6 +18,7 @@ namespace vks
 class VulkanRenderer;
 class VulkanPipeline;
 class VulkanTexture;
+
 
 class VulkanAnimationModel : public IVulkanModel<::HumanVertex, ::ShaderHumanData>
 {
@@ -28,9 +30,11 @@ public:
 	VulkanAnimationModel& operator=(const VulkanAnimationModel&) = delete;
 
 	bool	Initialize(VulkanRenderer* renderer) override;
-	
+	//void	loadNodes(humanGL::Node& node);
 	void bind(VkCommandBuffer commandBuffer, uint32_t currentFrame) override;
-	void draw(VkCommandBuffer commandBuffer) override;
+	void draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, ::ShaderHumanData& ubo) override;
+	void drawNode(VkCommandBuffer commandBuffer, Node<::HumanVertex>& node, uint32_t currentFrame, ::ShaderHumanData& ubo);
+
 	void EndCreateMesh(const std::string& BmpFilename) override;
 	void EndCreateMesh();
 
@@ -39,7 +43,11 @@ public:
 	void createDescriptorSets();
 	void createPipelineLayout();
 
-	void updateUniformBuffer(uint32_t currentFrame, ShaderHumanData* src);
+	void updateUniformBuffer(uint32_t currentFrame, ::ShaderHumanData* src);
+	void updateModelMat(Node<::HumanVertex>& node, ::ShaderHumanData& ubo, uint32_t currentFrame);
+
+	void traverseAndAddNodes(std::shared_ptr<Node<::HumanVertex>> node, std::vector<mymath::Mat4>& transformMats, mymath::Mat4& parent);
+	void createSkinFromRootNode(std::shared_ptr<Node<::HumanVertex>> rootNode);
 
 protected:
 
@@ -62,10 +70,13 @@ private:
 
 	std::unique_ptr<DescriptorPool> _DescriptorPool{};
 	std::unique_ptr<DescriptorSetLayout> _DecriptorSetLayout{};
+	std::unique_ptr<DescriptorSetLayout> _DecriptorSetLayoutSSBO{};
+	
 
 	// We use one UBO per frame, so we can have a frame overlap and make sure that uniforms aren't updated while still in use
 	std::array<UniformBuffer, MAX_CONCURRENT_FRAMES> _uniformBuffers;
 
 	VulkanPipeline* _basicPipeline = nullptr;
+	//Skin<::HumanVertex> _skin;
 };
 }

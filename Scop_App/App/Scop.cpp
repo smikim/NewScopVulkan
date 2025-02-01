@@ -10,8 +10,8 @@ namespace scop
 
 	Scop::~Scop()
 	{
-		deleteScopObjects();
-		//deleteHumanObjects();
+		//deleteScopObjects();
+		deleteHumanObjects();
 	}
 
 	void Scop::run()
@@ -43,8 +43,8 @@ namespace scop
 	{
 		try {
 			_renderer.initVulkan();
-			createScopObject(ObjFilename, BmpFilename);
-			//createHumanObject();
+			//createScopObject(ObjFilename, BmpFilename);
+			createHumanObject();
 		}
 		catch (const std::exception& e)
 		{
@@ -68,15 +68,15 @@ namespace scop
 		VkResult result = _renderer.beginRender();
 		if (result != VK_SUCCESS) return;
 		_renderer.beginRenderPass();
-		for (size_t i = 0; i < ScopObjects.size(); i++)
+		/*for (size_t i = 0; i < ScopObjects.size(); i++)
 		{
 			ScopObjects[i]->Render();
-		}
+		}*/
 
-		/*for (size_t i = 0; i < humanObjects.size(); i++)
+		for (size_t i = 0; i < humanObjects.size(); i++)
 		{
 			humanObjects[i]->Render();
-		}*/
+		}
 
 		_renderer.endRenderPass();
 		result = _renderer.endRender();
@@ -95,9 +95,9 @@ namespace scop
 		}
 		
 		ScopObjects.push_back(obj);
-		//obj->_transform.translation = { .0f, .0f, 0.0f };
+		obj->_transform.translation = { .0f, .0f, 0.0f };
 		//obj->_transform.scale = { 0.5f, 0.5f, 0.5f };
-		obj->setTranslation(0.f, 2.f, 0.f);
+		//obj->setTranslation(0.f, 2.f, 0.f);
 		//obj->setScale(0.5f, 0.5f, 0.5f);
 		//obj->setRotation(0.0f, 180.f, 0.0f);
 		
