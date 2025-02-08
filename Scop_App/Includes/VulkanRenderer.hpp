@@ -326,6 +326,8 @@ namespace vks
 		if (model)
 		{
 			model->loadNodes(node);
+			
+			
 		}
 		else
 		{

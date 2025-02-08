@@ -100,6 +100,9 @@
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Window\GlfwWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DynamicUniformBufferManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\App\Scop.hpp">
@@ -211,6 +214,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Window\GlfwWindow.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicUniformBufferManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

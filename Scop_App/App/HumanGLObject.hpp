@@ -36,10 +36,11 @@ namespace humanGL
 
 		void	Cleanup();
 		vks::IVulkanModel<::HumanVertex, ::ShaderHumanData>* CreateHumanMeshObject();
-		void createCubeData(std::vector<HumanVertex>& vertices, std::vector<uint32_t>& indices, uint32_t bodyPartID);
+		void createCubeData(std::vector<HumanVertex>& vertices, std::vector<uint32_t>& indices, uint32_t bodyPartID, const std::string& name);
 		void drawNode(Node<::HumanVertex>& node);
-		void fillVertexData(Node<::HumanVertex>& node, size_t partsID);
-		
+		size_t fillVertexData(Node<::HumanVertex>& node, size_t partsID);
+		mymath::Vec3 pickColor(const std::string& name);
+
 	public:
 		HumanGLObject();
 		~HumanGLObject();

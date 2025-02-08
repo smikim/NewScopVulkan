@@ -96,7 +96,7 @@ public:
 
 	virtual void drawNode(VkCommandBuffer commandBuffer, Node<VertexType>& node, uint32_t currentFrame, ShaderData& ubo) = 0;
 	
-	virtual void loadNodes(humanGL::Node<VertexType>& node);
+	virtual std::shared_ptr<Node<VertexType>> loadNodes(humanGL::Node<VertexType>& node);
 
 	//virtual void createVertexBuffer(const std::vector<VertexType>& vertices);
 	virtual void createVertexBuffer();
@@ -107,6 +107,8 @@ public:
 	virtual void EndCreateMesh(const std::string& BmpFilename) = 0;
 	
 	virtual void updateUniformBuffer(uint32_t currentFrame, ShaderData* src) = 0;
+
+	void printNodeHierarchy(const std::shared_ptr<Node<VertexType>>& node, int depth = 0);
 protected:
 	VulkanRenderer* _renderer;
 	
@@ -142,7 +144,22 @@ protected:
 //}
 
 template<typename VertexType, typename ShaderData>
-inline void IVulkanModel<VertexType, ShaderData>::loadNodes(humanGL::Node<VertexType>& node)
+void IVulkanModel<VertexType, ShaderData>::printNodeHierarchy(const std::shared_ptr<Node<VertexType>>& node, int depth)
+{
+	// 현재 노드의 이름을 출력
+	for (int i = 0; i < depth; ++i) {
+		std::cout << "  "; // 깊이에 따라 들여쓰기
+	}
+	std::cout << node->name << std::endl;
+
+	// 자식 노드들을 재귀적으로 출력
+	for (const auto& child : node->children) {
+		printNodeHierarchy(child, depth + 1);
+	}
+}
+
+template<typename VertexType, typename ShaderData>
+inline std::shared_ptr<Node<VertexType>> IVulkanModel<VertexType, ShaderData>::loadNodes(humanGL::Node<VertexType>& node)
 {
 	std::shared_ptr<Node<VertexType>> newNode = std::make_shared<Node<VertexType>>();
 	newNode->index = static_cast<uint32_t>(_nodes.size());
@@ -159,11 +176,16 @@ inline void IVulkanModel<VertexType, ShaderData>::loadNodes(humanGL::Node<Vertex
 
 	for (const auto& child : node.get_children())
 	{
+	
+		
 		std::cout << child.get() << std::endl;
-		loadNodes(*child);
-		newNode->children.push_back(_nodes.back());
-		_nodes.back()->parent = newNode;
+		std::shared_ptr<Node<VertexType>> childNode = loadNodes(*child);
+		newNode->children.push_back(childNode);
+		childNode->parent = newNode;
+		
 	}
+
+	return newNode;
 }
 
 template<typename VertexType, typename ShaderData>
@@ -244,6 +266,10 @@ inline mymath::Mat4 Node<VertexType>::getLocalMatrix()
 	
 	scaleMat = mymath::scale(scaleMat, _scale);
 
+	mymath::Mat4 empty{ 1.0f };
+	if (transMat * rotMat * scaleMat == mymath::Mat4{ 0.0f })
+		return empty;
+
 	return transMat * rotMat * scaleMat;
 }
 
@@ -259,6 +285,9 @@ inline mymath::Mat4 Node<VertexType>::getTRMatrix()
 	rotMat = mymath::rotate(rotMat, _rotation._x, mymath::Vec3(1.0f, 0.0f, 0.0f));
 	rotMat = mymath::rotate(rotMat, _rotation._z, mymath::Vec3(0.0f, 0.0f, 1.0f));
 
+	mymath::Mat4 empty{ 1.0f };
+	if (transMat * rotMat == mymath::Mat4{ 0.0f })
+		return empty;
 	return transMat * rotMat;
 }
 

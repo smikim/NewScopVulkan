@@ -99,6 +99,7 @@ namespace vks
 
 	void VulkanAnimationModel::draw(VkCommandBuffer commandBuffer, uint32_t currentFrame, ::ShaderHumanData& ubo)
 	{
+		//std::cout << "draw Node" << std::endl;
 		// Draw indexed triangle
 		for (auto& node : _nodes) {
 			drawNode(commandBuffer, *node, currentFrame, ubo);
@@ -219,6 +220,8 @@ namespace vks
 
 	void VulkanAnimationModel::EndCreateMesh()
 	{
+		printNodeHierarchy(_nodes[0], 0);
+		
 		createSkinFromRootNode(_nodes[0]);
 
 		createDescriptorPool();
@@ -294,12 +297,17 @@ namespace vks
 
 		mymath::Mat4 localMatrix = parent * node->getLocalMatrix();
 		//mymath::Mat4 localMatrix{ 1.0f };
+		
+		std::cout << node->name << std::endl;
 
 		transformMats.push_back(localMatrix);
-		parent = parent * node->getTRMatrix();
+		
+		/*if(node->parent)
+			parent = node->parent->getTRMatrix();*/
 		//parent = localMatrix;
 		for (auto& child : node->children)
 		{
+			parent = node->getTRMatrix();
 			traverseAndAddNodes(child, transformMats, parent);
 		}
 	}

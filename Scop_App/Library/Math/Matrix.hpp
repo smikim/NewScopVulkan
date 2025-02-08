@@ -28,6 +28,14 @@ namespace mymath
 		Mat4&	operator*=(const Mat4& other);
 		Mat4	operator*(const Mat4& other) const;
 
+		bool operator==(const Mat4& other) const {
+			for (int i = 0; i < 16; ++i) {
+				if (_m[i] != other._m[i]) {
+					return false;
+				}
+			}
+			return true;
+		}
 		Mat4&	operator*=(float scalar);
 		Mat4	operator*(float scalar) const;
 		Vec3	operator*(const Vec3& other) const;
