@@ -2,6 +2,7 @@
 
 #include "vulkan/vulkan.h"
 #include "../Includes/VulkanRenderer.hpp"
+#include "../Includes/Input.hpp"
 #include "ScopObject.hpp"
 #include "HumanGLObject.hpp"
 
@@ -36,7 +37,8 @@ namespace scop
 		std::string _windowName = "Scop";
 		
 		GlfwWindow _window{ _width, _height, _windowName };
-		
+		Input	_input;
+
 		vks::VulkanRenderer _renderer{ _window };
 		std::vector<ScopObject*> ScopObjects;
 		std::vector<humanGL::HumanGLObject*> humanObjects;

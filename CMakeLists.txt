@@ -126,6 +126,7 @@ set(INCLUDES_FILES
     Scop_App/Includes/VulkanTools.hpp
     Scop_App/Includes/VulkanUtils.hpp
     Scop_App/Includes/VulkanAnimationModel.hpp
+    Scop_App/Includes/Input.hpp
 )
 
 set(LIBRAYRY_FILES
@@ -169,6 +170,7 @@ set(SRC_FILES
     Scop_App/Sources/VulkanTools.cpp
     Scop_App/Sources/VulkanUtils.cpp
     Scop_App/Sources/VulkanAnimationModel.cpp
+    Scop_App/Sources/Input.cpp
 
 )
 

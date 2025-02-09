@@ -100,7 +100,7 @@
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Window\GlfwWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DynamicUniformBufferManager.cpp">
+    <ClCompile Include="Scop_App\Sources\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -198,6 +198,9 @@
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Includes\VulkanAnimationModel.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Includes\Input.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Library\Math\math.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -214,9 +217,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Window\GlfwWindow.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DynamicUniformBufferManager.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,7 @@ namespace scop
 {
 	Scop::Scop()
 	{
-
+		_input.Init(_window.getGLFWwindow());
 	}
 
 	Scop::~Scop()
@@ -56,6 +56,17 @@ namespace scop
 
 	void Scop::update()
 	{
+		_input.Update();
+
+		if (_input.GetButton(KEY_TYPE::W))
+			std::cout << "W" << std::endl;
+		if (_input.GetButton(KEY_TYPE::S))
+			std::cout << "S" << std::endl;
+		if (_input.GetButton(KEY_TYPE::A))
+			std::cout << "A" << std::endl;
+		if (_input.GetButton(KEY_TYPE::D))	
+			std::cout << "D" << std::endl;
+
 		for (size_t i = 0; i < ScopObjects.size(); i++)
 		{
 			ScopObjects[i]->Run();
