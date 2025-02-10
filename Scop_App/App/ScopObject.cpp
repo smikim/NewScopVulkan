@@ -263,7 +263,8 @@ namespace scop
 		if (_vulkanModel)
 		{
 			//_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
-			_renderer->renderMeshObject(_vulkanModel, _transform.getWorldMatrix(), _colorMode);
+			//_renderer->renderMeshObject(_vulkanModel, _transform.getWorldMatrix(), _colorMode);
+			// TODO
 		}
 	}
 

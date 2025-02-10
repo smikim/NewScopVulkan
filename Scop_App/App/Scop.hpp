@@ -15,6 +15,8 @@ namespace humanGL
 	class HumanGLObject;
 }
 
+class GameObject;
+
 namespace scop
 {
 	class Scop
@@ -28,7 +30,7 @@ namespace scop
 		void update();
 		void render();
 		ScopObject* createScopObject(std::string& ObjFilename, std::string& BmpFilename);
-		humanGL::HumanGLObject* createHumanObject();
+		std::shared_ptr<humanGL::HumanGLObject> createHumanObject();
 
 	private:
 		
@@ -41,8 +43,11 @@ namespace scop
 
 		vks::VulkanRenderer _renderer{ _window };
 		std::vector<ScopObject*> ScopObjects;
-		std::vector<humanGL::HumanGLObject*> humanObjects;
-		
+		//std::vector<humanGL::HumanGLObject*> humanObjects;
+		std::vector<std::shared_ptr<humanGL::HumanGLObject>> humanObjects;
+		// Camera
+		std::shared_ptr<GameObject> _Camera;
+
 		void deleteScopObjects();
 		void deleteHumanObjects();
 	public: 

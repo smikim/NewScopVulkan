@@ -1,10 +1,11 @@
 #include "HumanGLObject.hpp"
 
 #include "../Includes/VulkanRenderer.hpp"
-#include "../Component/Transform.hpp"
-#include "../Component/Animation.hpp"
+
 #include "../Scop_App/Library/Math/Matrix.hpp"
 #include "../Scop_App/Component/Animation.hpp"
+#include "../Component/Camera.hpp"
+#include "../Component/Transform.hpp"
 
 #include <cassert>
 
@@ -67,14 +68,14 @@ namespace humanGL
 
 		std::unique_ptr<Node<::HumanVertex>> left_upper_leg = std::make_unique<Node<::HumanVertex>>("left_upper_leg");
 		std::cout << "left_upper_leg : " << left_upper_leg.get() << std::endl;
-		left_upper_leg->get_transform().set_translation(mymath::Vec3(0.6f, -2.0f, 0.0f));
+		left_upper_leg->get_transform().set_translation(mymath::Vec3(0.6f, -1.8f, 0.0f));
 		left_upper_leg->get_transform().set_rotation(mymath::Vec3(0.0f, 0.0f, 0.0f));
 		left_upper_leg->get_transform().set_scale(mymath::Vec3(0.4f, 1.0f, 0.4f));
 
 
 		std::unique_ptr<Node<::HumanVertex>> right_upper_leg = std::make_unique<Node<::HumanVertex>>("right_upper_leg");
 		std::cout << "right_upper_leg : " << right_upper_leg.get() << std::endl;
-		right_upper_leg->get_transform().set_translation(mymath::Vec3(-0.6f, -2.0f, 0.0f));
+		right_upper_leg->get_transform().set_translation(mymath::Vec3(-0.6f, -1.8f, 0.0f));
 		right_upper_leg->get_transform().set_rotation(mymath::Vec3(0.0f, 0.0f, 0.0f));
 		right_upper_leg->get_transform().set_scale(mymath::Vec3(0.4f, 1.0f, 0.4f));
 
@@ -137,24 +138,24 @@ namespace humanGL
 
 	}
 
-	void HumanGLObject::drawNode(Node<::HumanVertex>& node)
-	{
-		if (_vulkanModel)
-		{
-			//_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
-			//mymath::Mat4 _worldMatrix = node.get_transform().get_world_matrix();
-			mymath::Mat4 empty{ 1.0f };
-			mymath::Mat4 _worldMatrix = empty;
-			
-			_renderer->renderMeshObject<::HumanVertex>(_vulkanModel, _worldMatrix, 0);
-		}
+	//void HumanGLObject::drawNode(Node<::HumanVertex>& node)
+	//{
+	//	if (_vulkanModel)
+	//	{
+	//		//_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
+	//		//mymath::Mat4 _worldMatrix = node.get_transform().get_world_matrix();
+	//		mymath::Mat4 empty{ 1.0f };
+	//		mymath::Mat4 _worldMatrix = empty;
+	//		
+	//		_renderer->renderMeshObject<::HumanVertex>(_vulkanModel, _worldMatrix, 0);
+	//	}
 
-		for (const auto& child : node.get_children())
-		{
-			std::cout << child.get() << std::endl;
-			drawNode(*child);
-		}
-	}
+	//	for (const auto& child : node.get_children())
+	//	{
+	//		std::cout << child.get() << std::endl;
+	//		drawNode(*child);
+	//	}
+	//}
 
 	size_t HumanGLObject::fillVertexData(Node<::HumanVertex>& node, size_t partsID)
 	{
@@ -198,6 +199,11 @@ namespace humanGL
 	void HumanGLObject::Run()
 	{
 		//TODO
+		// 	humanObjects 의 LateUpdate() 호출;
+		//	humanObjects의 FinalUpdate() 호출; run 에서 호출 가능
+		
+		//LateUpdate();
+		//FixedUpdate();
 	}
 
 
@@ -210,9 +216,16 @@ namespace humanGL
 		{
 			//_renderer->renderMeshObject(_vulkanModel, _transform.mat4(), _colorMode);
 			mymath::Mat4 scaleMatrix(1.0f);
-			_renderer->renderMeshObject(_vulkanModel, scaleMatrix, 0);
+			mymath::Mat4 ViewMat = GetCamera()->get_ViewMat();
+			//mymath::Mat4 ViewMat(1.0f);
+			//mymath::Mat4 ProjMat(1.0f);
+			mymath::Mat4 ProjMat = GetCamera()->get_ProjMat();
+			//_renderer->renderMeshObject(_vulkanModel, scaleMatrix, 0);
+			_renderer->renderMeshObject(_vulkanModel, scaleMatrix, ViewMat, ProjMat, 0);
 		}
 	}
+
+
 
 	mymath::Vec3 HumanGLObject::pickColor(const std::string& name)
 	{

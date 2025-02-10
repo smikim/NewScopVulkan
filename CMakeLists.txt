@@ -77,10 +77,12 @@ set(APP_FILES
     Scop_App/App/Scop.hpp
     Scop_App/App/ScopObject.hpp
     Scop_App/App/HumanGLObject.hpp
+    Scop_App/App/GameObject.hpp
     # Source Files
     Scop_App/App/Scop.cpp
     Scop_App/App/ScopObject.cpp
     Scop_App/App/HumanGLObject.cpp
+    Scop_App/App/GameObject.cpp
 )
 
 set(COMPONENT_FILES
@@ -88,10 +90,17 @@ set(COMPONENT_FILES
     Scop_App/Component/Component.hpp
     Scop_App/Component/Transform.hpp
     Scop_App/Component/Animation.hpp
+    Scop_App/Component/Camera.hpp
+    Scop_App/Component/MonoBehaviour.hpp
+    Scop_App/Component/CameraScript.hpp
+    
     # Source Files
     Scop_App/Component/Component.cpp
     Scop_App/Component/Transform.cpp
     Scop_App/Component/Animation.cpp
+    Scop_App/Component/Camera.cpp
+    Scop_App/Component/MonoBehaviour.cpp
+    Scop_App/Component/CameraScript.cpp   
 )
 set(GRAPHICS_FILES
     # Headers Files    

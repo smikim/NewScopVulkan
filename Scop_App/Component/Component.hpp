@@ -1,53 +1,59 @@
 #pragma once
 #include <memory>
-#include "../App/HumanGLObject.hpp"
 
-namespace humanGL
+class GameObject;
+
+namespace vks
 {
-class HumanGLObject;
+class VulkanRenderer;
 }
 
-namespace scop
-{
 class Transform;
+class Input;
 
-enum class ComponentType
+enum class COMPONENT_TYPE
 {
-	Transform,
-	Camera,
-	Animator,
+	TRANSFORM,
+	CAMERA,
+	MONO_BEHAVIOUR,
 	// ...
 	End,
 };
 
 enum
 {
-	FIXED_COMPONENT_COUNT = static_cast<uint8_t>(ComponentType::End) - 1
+	FIXED_COMPONENT_COUNT = static_cast<uint8_t>(COMPONENT_TYPE::End) - 1
 };
 
 class Component
 {
 public:
-	Component(ComponentType type);
+	Component(COMPONENT_TYPE type, vks::VulkanRenderer* renderer);
 	virtual ~Component();
 
-	virtual void Init() abstract;
-	virtual void Update() abstract;
 
-	std::shared_ptr<humanGL::HumanGLObject> GetGameObject() { return _gameObject.lock();
+	//virtual void Awake() { }
+	//virtual void Start() { }
+	//virtual void Update() { }
+	virtual void LateUpdate(Input& input, float deltaTime) { }
+	virtual void FinalUpdate() { }
+
+	std::shared_ptr<GameObject> GetGameObject() { return _gameObject.lock();
 	}
-	ComponentType GetType() { return _type; }
+	std::shared_ptr<Transform> GetTransform();
+
+	COMPONENT_TYPE GetType() { return _type; }
 	//std::shared_ptr<Transform> GetTransform();
-	void SetGameObject(std::shared_ptr<humanGL::HumanGLObject> gameObject) { _gameObject = gameObject; }
-	friend class HumanGLObject;
+	void SetGameObject(std::shared_ptr<GameObject> gameObject) { _gameObject = gameObject; }
+	friend class GameObGameObjectject;
 
 protected:
 
-	ComponentType _type;
-	std::weak_ptr<humanGL::HumanGLObject> _gameObject;
+	COMPONENT_TYPE _type;
+	std::weak_ptr<GameObject> _gameObject;
+	vks::VulkanRenderer* _renderer;
 };
 
-}
 	
 
 

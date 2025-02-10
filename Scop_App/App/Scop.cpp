@@ -1,5 +1,10 @@
 #include "Scop.hpp"
+
 #include "../Includes/KeyboardMovementController.hpp"
+#include "GameObject.hpp"
+#include "../Component/Transform.hpp"
+#include "../Component/Camera.hpp"
+#include "../Component/CameraScript.hpp"
 
 namespace scop
 {
@@ -17,7 +22,14 @@ namespace scop
 	void Scop::run()
 	{
 		KeyboardMovementController keyboardController{};
-		
+
+		// Camera
+		_Camera = std::make_shared<GameObject>();
+		_Camera->AddComponent(std::make_shared<Transform>(&_renderer));
+		_Camera->AddComponent(std::make_shared<Camera>(&_renderer)); // Near=1, Far=1000, FOV=45도
+		_Camera->AddComponent(std::make_shared<CameraScript>(&_renderer));
+		_Camera->GetTransform()->SetLocalPosition(mymath::Vec3(0.f, 0.0f, -14.0f));
+
 		auto currentTime = std::chrono::high_resolution_clock::now();
 
 		while (!_window.shouldClose()) {
@@ -31,6 +43,10 @@ namespace scop
 			glfwPollEvents();
 			keyboardController.moveObjects(_window.getGLFWwindow(), frameTime, ScopObjects);
 			keyboardController.switchColoring(_window.getGLFWwindow(), ScopObjects);
+
+			_input.Update();
+			_Camera->LateUpdate(_input, frameTime);
+			_Camera->FixedUpdate();
 
 			update();
 			render();
@@ -56,20 +72,32 @@ namespace scop
 
 	void Scop::update()
 	{
-		_input.Update();
+		
 
-		if (_input.GetButton(KEY_TYPE::W))
-			std::cout << "W" << std::endl;
-		if (_input.GetButton(KEY_TYPE::S))
-			std::cout << "S" << std::endl;
-		if (_input.GetButton(KEY_TYPE::A))
-			std::cout << "A" << std::endl;
-		if (_input.GetButton(KEY_TYPE::D))	
-			std::cout << "D" << std::endl;
+		
 
+		{
+			if (_input.GetButton(KEY_TYPE::W))
+				std::cout << "W" << std::endl;
+			if (_input.GetButton(KEY_TYPE::S))
+				std::cout << "S" << std::endl;
+			if (_input.GetButton(KEY_TYPE::A))
+				std::cout << "A" << std::endl;
+			if (_input.GetButton(KEY_TYPE::D))
+				std::cout << "D" << std::endl;
+		}	
+		
 		for (size_t i = 0; i < ScopObjects.size(); i++)
 		{
 			ScopObjects[i]->Run();
+		}
+
+		// 	humanObjects 의 LateUpdate() 호출;
+		//	humanObjects의 FinalUpdate() 호출; run 에서 호출 가능
+		
+		for (size_t i = 0; i < humanObjects.size(); i++)
+		{
+			humanObjects[i]->Run();
 		}
 	}
 
@@ -115,15 +143,17 @@ namespace scop
 		return obj;
 	}
 
-	humanGL::HumanGLObject* Scop::createHumanObject()
+	std::shared_ptr<humanGL::HumanGLObject> Scop::createHumanObject()
 	{
-		humanGL::HumanGLObject* obj = new humanGL::HumanGLObject;
+		auto obj = std::make_shared<humanGL::HumanGLObject>();
 
 		if (!obj->Initialize(this))
 		{
-			delete obj;
 			throw std::runtime_error("Failed to initialize ScopObject");
 		}
+
+		obj->AddComponent(std::make_shared<Transform>(&_renderer));
+		std::shared_ptr<Transform> transform = obj->GetTransform();
 
 		humanObjects.push_back(obj);
 
@@ -140,9 +170,6 @@ namespace scop
 
 	void Scop::deleteHumanObjects()
 	{
-		for (humanGL::HumanGLObject* obj : humanObjects) {
-			delete obj;
-		}
 		humanObjects.clear();
 	}
 	

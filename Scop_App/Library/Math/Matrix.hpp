@@ -16,6 +16,13 @@ namespace mymath
 		Mat4();
 		Mat4(const Mat4& other);
 		Mat4(float x);
+
+		Mat4& invert();
+		
+		Vec3 Right();
+		Vec3 Up();
+		Vec3 Backward();
+
 		Mat4& operator=(const Mat4& other);
 
 		float& operator[](std::size_t index);
@@ -50,7 +57,10 @@ namespace mymath
 		size_t size() const {
 			return sizeof(_m);
 		}
-
+	private:
+		float getCofactor(float m0, float m1, float m2,
+			float m3, float m4, float m5,
+			float m6, float m7, float m8) const;
 	};
 
 	Mat4	lookAt(const Vec3& eye, const Vec3& center, const Vec3& up);

@@ -10,6 +10,9 @@
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\App\HumanGLObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\App\GameObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\Component.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -17,6 +20,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\MonoBehaviour.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\CameraScript.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Graphics\BasicPSO.cpp">
@@ -97,10 +109,10 @@
     <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Sources\VulkanAnimationModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Window\GlfwWindow.cpp">
+    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Sources\Input.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Scop_App\Sources\Input.cpp">
+    <ClCompile Include="C:\Users\kimse\NewScop\Scop\Scop_App\Window\GlfwWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -114,6 +126,9 @@
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\App\HumanGLObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\App\GameObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\Component.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -121,6 +136,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\Animation.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\Camera.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\MonoBehaviour.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Component\CameraScript.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="C:\Users\kimse\NewScop\Scop\Scop_App\Graphics\BasicPSO.hpp">

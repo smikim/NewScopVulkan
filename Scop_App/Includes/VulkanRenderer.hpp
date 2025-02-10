@@ -87,7 +87,8 @@ namespace vks
 		VkResult endRender();
 
 		template <typename VertexType, typename ShaderData>
-		void renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode);
+		void renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, mymath::Mat4 viewMat,
+			mymath::Mat4 projMat, uint32_t colorMode);
 
 		VkResult prepareFrame();
 		VkResult submitFrame();
@@ -168,7 +169,8 @@ namespace vks
 		void updateObjectUniformBuffer(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode);
 
 		template<typename ShaderData>
-		ShaderData updateObjectMatrix(mymath::Mat4& worldMat);
+		ShaderData updateObjectMatrix(mymath::Mat4& worldMat, mymath::Mat4 viewMat,
+			mymath::Mat4 projMat);
 
 		uint32_t _width;
 		uint32_t _height;
@@ -337,7 +339,11 @@ namespace vks
 
 
 	template <typename VertexType, typename ShaderData>
-	void VulkanRenderer::renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, mymath::Mat4 worldMat, uint32_t colorMode)
+	void VulkanRenderer::renderMeshObject(IVulkanModel<VertexType, ShaderData>* model, 
+		mymath::Mat4 worldMat,
+		mymath::Mat4 viewMat,
+		mymath::Mat4 projMat,
+		uint32_t colorMode)
 	{
 		VkCommandBuffer commandBuffer = getCurrentCommandBuffer();
 
@@ -347,7 +353,7 @@ namespace vks
 
 			//updateObjectUniformBuffer(model, worldMat, colorMode);
 			
-			ShaderData ubo = updateObjectMatrix<ShaderData>(worldMat);
+			ShaderData ubo = updateObjectMatrix<ShaderData>(worldMat, viewMat, projMat);
 
 			model->draw(commandBuffer, _currentFrame, ubo);
 		}
@@ -380,18 +386,21 @@ namespace vks
 	}
 
 	template<typename ShaderData>
-	ShaderData VulkanRenderer::updateObjectMatrix(mymath::Mat4& worldMat)
+	ShaderData VulkanRenderer::updateObjectMatrix(mymath::Mat4& worldMat, mymath::Mat4 viewMat,
+		mymath::Mat4 projMat)
 	{
 		ShaderData ubo{};
 
 		ubo.modelMatrix = worldMat;
-		ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, 8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
+
+		//ubo.viewMatrix = mymath::lookAt(mymath::Vec3(0.0f, 0.0f, 8.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, 1.0f, 0.0f));
 		//ubo.viewMatrix = mymath::lookAtGLM(mymath::Vec3(2.0f, 2.0f, 2.0f), mymath::Vec3(0.0f, 0.0f, 0.0f), mymath::Vec3(0.0f, -1.0f, 0.0f));
+		ubo.viewMatrix = viewMat;
 
-
-		ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
+		//ubo.projectionMatrix = mymath::perspective(mymath::radians(45.0f), getAspectRatio(), 0.1f, 100.0f);
 		//ubo.projectionMatrix = mymath::perspectiveGLM(mymath::radians(45.0f), getAspectRatio(), 0.1f, 10.0f);
-
+		ubo.projectionMatrix = projMat;
+		
 		return ubo;
 	}
 

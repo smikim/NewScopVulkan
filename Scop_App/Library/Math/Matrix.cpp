@@ -2,6 +2,8 @@
 
 namespace mymath
 {
+	const float EPSILON = 0.00001f;
+
 	Mat4::Mat4()
 	{
 		std::memset(_m, 0.0f, 16 * sizeof(float));
@@ -22,6 +24,80 @@ namespace mymath
 			else
 				_m[i] = 0;
 		}
+	}
+
+	Mat4& Mat4::invert()
+	{
+		 // get cofactors of minor matrices
+		float cofactor0 = getCofactor(_m[5], _m[6], _m[7], _m[9], _m[10], _m[11], _m[13], _m[14], _m[15]);
+		float cofactor1 = getCofactor(_m[4], _m[6], _m[7], _m[8], _m[10], _m[11], _m[12], _m[14], _m[15]);
+		float cofactor2 = getCofactor(_m[4], _m[5], _m[7], _m[8], _m[9], _m[11], _m[12], _m[13], _m[15]);
+		float cofactor3 = getCofactor(_m[4], _m[5], _m[6], _m[8], _m[9], _m[10], _m[12], _m[13], _m[14]);
+
+		// get determinant
+		float determinant = _m[0] * cofactor0 - _m[1] * cofactor1 + _m[2] * cofactor2 - _m[3] * cofactor3;
+		if (fabs(determinant) <= EPSILON)
+		{
+			
+			Mat4 res{ 1.0f };
+			return res;
+		}
+
+		// get rest of cofactors for adj(M)
+		float cofactor4 = getCofactor(_m[1], _m[2], _m[3], _m[9], _m[10], _m[11], _m[13], _m[14], _m[15]);
+		float cofactor5 = getCofactor(_m[0], _m[2], _m[3], _m[8], _m[10], _m[11], _m[12], _m[14], _m[15]);
+		float cofactor6 = getCofactor(_m[0], _m[1], _m[3], _m[8], _m[9], _m[11], _m[12], _m[13], _m[15]);
+		float cofactor7 = getCofactor(_m[0], _m[1], _m[2], _m[8], _m[9], _m[10], _m[12], _m[13], _m[14]);
+
+		float cofactor8 = getCofactor(_m[1], _m[2], _m[3], _m[5], _m[6], _m[7], _m[13], _m[14], _m[15]);
+		float cofactor9 = getCofactor(_m[0], _m[2], _m[3], _m[4], _m[6], _m[7], _m[12], _m[14], _m[15]);
+		float cofactor10 = getCofactor(_m[0], _m[1], _m[3], _m[4], _m[5], _m[7], _m[12], _m[13], _m[15]);
+		float cofactor11 = getCofactor(_m[0], _m[1], _m[2], _m[4], _m[5], _m[6], _m[12], _m[13], _m[14]);
+
+		float cofactor12 = getCofactor(_m[1], _m[2], _m[3], _m[5], _m[6], _m[7], _m[9], _m[10], _m[11]);
+		float cofactor13 = getCofactor(_m[0], _m[2], _m[3], _m[4], _m[6], _m[7], _m[8], _m[10], _m[11]);
+		float cofactor14 = getCofactor(_m[0], _m[1], _m[3], _m[4], _m[5], _m[7], _m[8], _m[9], _m[11]);
+		float cofactor15 = getCofactor(_m[0], _m[1], _m[2], _m[4], _m[5], _m[6], _m[8], _m[9], _m[10]);
+
+		// build inverse matrix = adj(M) / det(M)
+		// adjugate of M is the transpose of the cofactor matrix of M
+		float invDeterminant = 1.0f / determinant;
+		_m[0] = invDeterminant * cofactor0;
+		_m[1] = -invDeterminant * cofactor4;
+		_m[2] = invDeterminant * cofactor8;
+		_m[3] = -invDeterminant * cofactor12;
+		
+		_m[4] = -invDeterminant * cofactor1;
+		_m[5] = invDeterminant * cofactor5;
+		_m[6] = -invDeterminant * cofactor9;
+		_m[7] = invDeterminant * cofactor13;
+		
+		_m[8] = invDeterminant * cofactor2;
+		_m[9] = -invDeterminant * cofactor6;
+		_m[10] = invDeterminant * cofactor10;
+		_m[11] = -invDeterminant * cofactor14;
+		
+		_m[12] = -invDeterminant * cofactor3;
+		_m[13] = invDeterminant * cofactor7;
+		_m[14] = -invDeterminant * cofactor11;
+		_m[15] = invDeterminant * cofactor15;
+
+		return *this;
+	}
+
+	Vec3 Mat4::Right()
+	{
+		return Vec3(_m[0], _m[1], _m[2]);
+	}
+
+	Vec3 Mat4::Up()
+	{
+		return Vec3(_m[4], _m[5], _m[6]);
+	}
+
+	Vec3 Mat4::Backward()
+	{
+		return Vec3(_m[8], _m[9], _m[10]);
 	}
 
 	Mat4& Mat4::operator=(const Mat4& other)
@@ -155,6 +231,13 @@ namespace mymath
 		res._z = _m[2] * other._x + _m[6] * other._y + _m[10] * other._z;
 
 		return res;
+	}
+
+	float Mat4::getCofactor(float m0, float m1, float m2, float m3, float m4, float m5, float m6, float m7, float m8) const
+	{
+		return m0 * (m4 * m8 - m5 * m7) -
+			m1 * (m3 * m8 - m5 * m6) +
+			m2 * (m3 * m7 - m4 * m6);
 	}
 
 
